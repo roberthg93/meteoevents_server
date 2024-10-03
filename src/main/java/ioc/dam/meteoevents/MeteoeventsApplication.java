@@ -9,5 +9,6 @@ public class MeteoeventsApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(MeteoeventsApplication.class, args);
 	}
+	/* això és un comentari */
 
 }
