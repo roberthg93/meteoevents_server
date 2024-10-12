@@ -12,7 +12,6 @@ Una vegada descarregat el projecte en local. Seguir els següent passos:
    - Anem a Inicio i 
    - Des del Terminal, anem a la ruta on ens haguem descarregat el projecte "meteoevents_server" en el nostre equip.
    - Construïm i aixequem els contenidors amb la següent comanda:
-   `bash
    `docker-compose up --build`
 
    - Hem de poder veure els nostres contenidors (BD i aplicació servidor) corrents:
