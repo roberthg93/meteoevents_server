@@ -24,5 +24,5 @@ Una vegada descarregat el projecte en local. Seguir els següent passos:
 
 **Nota: Si volem accedir a la BD des de pgAdmin**
 
-La base de dades “meteoevents” del contenidor “postgres-container” que acabem de crear es troba en el localhost del nostre equip, però si des del pgAdmin fem una connexió en el servidor localhost no ens trobarà la base de dades que corre en el docker. Entrarà en conflicte i només trobarà les bases de dades ubicades en el localhost del nostre equip. Perquè ens apareguin les bases de dades de Docker. Hem d’anar a “Servicios” del nostre sistema Windows i aturar el servei de PostgreSQL que està corrents en el nostre equip (en el meu cas “postgresql-x64-14”).
+La base de dades “meteoevents” del contenidor “postgres-container” que acabem de crear es troba en el localhost del nostre equip, però si des del pgAdmin fem una connexió en el servidor localhost no ens trobarà la base de dades que corre en el docker. Entrarà en conflicte i només trobarà les bases de dades ubicades en el localhost del nostre equip. Perquè ens apareguin les bases de dades de Docker hem d’anar a “Servicios” del nostre sistema Windows i aturar el servei de PostgreSQL que està corrents en el nostre equip (en el meu cas “postgresql-x64-14”).
 ![image](https://github.com/user-attachments/assets/4d5766f5-7d60-4175-bee8-bf472c444af7)
