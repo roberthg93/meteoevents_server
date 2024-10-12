@@ -18,5 +18,6 @@ Una vegada descarregat el projecte en local. Seguir els següent passos:
 ![image](https://github.com/user-attachments/assets/e2384e3f-2682-4dd6-ac4b-4088cb70bca1)
 
    - Si heu descarregat una nova versió del codi "meteoevents_server" i ja teniu creats aquests contenidors en el Docker Desktop del vostre equip heu d'eliminar-los i tornar-los a construir:
-   `docker-compose down`
-   `docker-compose up --build`
+   ```
+   docker-compose down
+   docker-compose up --build
