@@ -1,6 +1,7 @@
 # meteoevents_server
 Projecte final de DAM - Meteo Events (backend)
 
+## Inicialització servidor
 Aquesta aplicació servidor està pensada per ser distribuïda i executada des de Docker.
 Una vegada descarregat el projecte en local. Seguir els següent passos:
 
