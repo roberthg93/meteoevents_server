@@ -1,0 +1,9 @@
+ioc\dam\meteoevents\entity\Usuari.class
+ioc\dam\meteoevents\dto\UsuariDTO.class
+ioc\dam\meteoevents\service\UsuariService.class
+ioc\dam\meteoevents\security\SecurityConfig.class
+ioc\dam\meteoevents\MeteoeventsApplication.class
+ioc\dam\meteoevents\controller\UsuariController.class
+ioc\dam\meteoevents\repository\UsuariRepository.class
+ioc\dam\meteoevents\mapper\UsuariMapperImpl.class
+ioc\dam\meteoevents\mapper\UsuariMapper.class

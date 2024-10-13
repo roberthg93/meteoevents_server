@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: ioc.dam.meteoevents.MeteoeventsApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.717 s -- in ioc.dam.meteoevents.MeteoeventsApplicationTests
