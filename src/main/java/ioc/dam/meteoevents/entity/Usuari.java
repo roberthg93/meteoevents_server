@@ -31,4 +31,16 @@ public class Usuari {
     @Column
     private String ultima_connexio;
 
+    public String getContrasenya() {
+        return contrasenya;
+    }
+
+    public String getNomUsuari() {
+        return nomUsuari;
+    }
+
+    public String getFuncional_id() {
+        return funcional_id;
+    }
+
 }

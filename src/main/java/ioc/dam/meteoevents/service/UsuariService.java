@@ -5,6 +5,7 @@ import ioc.dam.meteoevents.entity.Usuari;
 import ioc.dam.meteoevents.mapper.UsuariMapper;
 import ioc.dam.meteoevents.repository.UsuariRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,6 +16,9 @@ public class UsuariService {
     @Autowired
     private UsuariRepository usuariRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     /*public UsuariDTO registraUsuari(UsuariDTO usuariDTO, String contrasenya) {
         Usuari usuari = UsuariMapper.INSTANCE.toEntity(usuariDTO);
         usuari.setContrasenya(contrasenya);
@@ -22,12 +26,11 @@ public class UsuariService {
         return UsuariMapper.INSTANCE.toDTO(usuariGuardat);
     }*/
 
-    public boolean autenticar(String nomUsuari, String contrasenya) {
+    public Usuari autenticar(String nomUsuari, String contrasenya) {
         Optional<Usuari> usuariOpt = usuariRepository.findByNomUsuari(nomUsuari);
-        if (usuariOpt.isPresent()) {
-            Usuari usuari = usuariOpt.get();
-            return contrasenya.equals(usuari.getContrasenya());
+        if (usuariOpt.isPresent() && contrasenya.equals(usuariOpt.get().getContrasenya())) {
+            return usuariOpt.get();
         }
-        return false;
+        return null;
     }
 }
