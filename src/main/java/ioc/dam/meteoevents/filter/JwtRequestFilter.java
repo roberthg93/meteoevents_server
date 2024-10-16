@@ -3,6 +3,7 @@ package ioc.dam.meteoevents.filter;
 import io.jsonwebtoken.ExpiredJwtException;
 import ioc.dam.meteoevents.entity.Usuari;
 import ioc.dam.meteoevents.service.JwtService;
+import ioc.dam.meteoevents.util.TokenManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+
+    @Autowired
+    private TokenManager tokenManager;
 
     @Autowired
     public JwtRequestFilter(JwtService jwtService, UserDetailsService userDetailsService) {
@@ -50,7 +54,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     if (SecurityContextHolder.getContext().getAuthentication() == null) {
                         UserDetails userDetails = userDetailsService.loadUserByUsername(nomUsuari);
 
-                        if (jwtService.validarToken(jwt, userDetails.getUsername())) {
+                        if (userDetails != null && tokenManager.isTokenActive(jwt) && jwtService.validarToken(jwt, userDetails.getUsername())) {
                             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                             SecurityContextHolder.getContext().setAuthentication(authToken);
                         }

@@ -1,5 +1,7 @@
 package ioc.dam.meteoevents.service;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import ioc.dam.meteoevents.entity.Usuari;
 import ioc.dam.meteoevents.repository.UsuariRepository;
 import ioc.dam.meteoevents.util.JwtUtil;
@@ -21,8 +23,16 @@ public class JwtService {
     }
 
     public Optional<Usuari> getUserFromToken(String token) {
-        String nomUsuari = jwtUtil.extreureNomUsuari(token);
-        return usuariRepository.findByNomUsuari(nomUsuari);
+        try {
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            return usuariRepository.findByNomUsuari(nomUsuari);
+        } catch (ExpiredJwtException e) {
+            System.out.println("Token expirat");
+            return Optional.empty();
+        } catch (JwtException e) {
+            System.out.println("Token invalid");
+            return Optional.empty();
+        }
     }
 
     public boolean validarToken(String token, String nomUsuari) {

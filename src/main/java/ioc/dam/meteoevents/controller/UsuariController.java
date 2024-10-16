@@ -3,10 +3,12 @@ package ioc.dam.meteoevents.controller;
 import ioc.dam.meteoevents.entity.Usuari;
 import ioc.dam.meteoevents.service.UsuariService;
 import ioc.dam.meteoevents.util.JwtUtil;
+import ioc.dam.meteoevents.util.TokenManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/api/usuaris")
@@ -18,11 +20,9 @@ public class UsuariController {
     @Autowired
     private JwtUtil jwtUtil;
 
-   /* @PostMapping("/registre")
-    public ResponseEntity<UsuariDTO> registraUsuari(@RequestBody UsuariDTO usuariDTO, @RequestParam String contrasenya) {
-        UsuariDTO usuariRegistrat = usuariService.registraUsuari(usuariDTO, contrasenya);
-        return new ResponseEntity<>(usuariRegistrat, HttpStatus.CREATED);
-    }*/
+    @Autowired
+    private TokenManager tokenManager;
+
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> loginUsuari(@RequestParam String nomUsuari, @RequestParam String contrasenya) {
@@ -34,6 +34,19 @@ public class UsuariController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Tornarà un error 401 sense cos
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+
+            // Eliminar el token de la memoria
+            tokenManager.removeToken(token);
+
+            return ResponseEntity.ok("Logout amb èxit");
+        }
+        return ResponseEntity.badRequest().body("Token no proporcionat");
     }
 
     public class JwtResponse {
