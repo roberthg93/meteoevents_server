@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <funcional>
+        <id>USR</id>
+        <nom>Usuari</nom>
+    </funcional>
+    <funcional>
+        <id>ADM</id>
+        <nom>Administrador</nom>
+    </funcional>
+    <usuaris>
+        <id>1</id>
+        <nom_c>Administrador</nom_c>
+        <funcional_id>ADM</funcional_id>
+        <nom_usuari>admin</nom_usuari>
+        <contrasenya>admin24</contrasenya>
+    </usuaris>
+    <usuaris>
+        <id>2</id>
+        <nom_c>Convidat</nom_c>
+        <funcional_id>USR</funcional_id>
+        <nom_usuari>convidat</nom_usuari>
+        <contrasenya>convidat24</contrasenya>
+    </usuaris>
+</dataset>

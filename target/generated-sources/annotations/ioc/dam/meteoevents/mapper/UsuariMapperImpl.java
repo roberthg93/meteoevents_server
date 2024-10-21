@@ -6,7 +6,7 @@ import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-10-19T10:39:36+0200",
+    date = "2024-10-21T23:20:48+0200",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.4 (Amazon.com Inc.)"
 )
 public class UsuariMapperImpl implements UsuariMapper {
@@ -27,16 +27,16 @@ public class UsuariMapperImpl implements UsuariMapper {
     }
 
     @Override
-    public Usuari toEntity(UsuariDTO ususariDTO) {
-        if ( ususariDTO == null ) {
+    public Usuari toEntity(UsuariDTO usuariDTO) {
+        if ( usuariDTO == null ) {
             return null;
         }
 
         Usuari usuari = new Usuari();
 
-        usuari.setId( ususariDTO.getId() );
-        usuari.setNom_c( ususariDTO.getNom_c() );
-        usuari.setNomUsuari( ususariDTO.getNomUsuari() );
+        usuari.setId( usuariDTO.getId() );
+        usuari.setNom_c( usuariDTO.getNom_c() );
+        usuari.setNomUsuari( usuariDTO.getNomUsuari() );
 
         return usuari;
     }
