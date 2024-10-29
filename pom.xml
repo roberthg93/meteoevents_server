@@ -145,21 +145,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Dependència per fer tests a la BD -->
-		<dependency>
-			<groupId>org.dbunit</groupId>
-			<artifactId>dbunit</artifactId>
-			<version>2.7.0</version>
-			<scope>test</scope>
-		</dependency>
-		<!-- Dependència per fer tests a la BD -->
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest</artifactId>
-			<version>2.2</version>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 	<build>
