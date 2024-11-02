@@ -37,7 +37,7 @@ class UsuariControllerTest {
     @MockBean
     private JwtUtil jwtUtil;
 
-    @Mock
+    @MockBean
     private TokenManager tokenManager;
 
     /**
@@ -91,12 +91,22 @@ class UsuariControllerTest {
      */
     @Test
     void logoutUsuariCorrecte() throws Exception {
+        String token = "mockedJwtToken";
+        String nomUsuari = "mockedUsuari";
+
+        // Simular que extraguem el nom d'usuari correctament
+        when(jwtUtil.extreureNomUsuari(token)).thenReturn(nomUsuari);
+
+        // Simular que el token es valid i està actiu
+        when(jwtUtil.validarToken(token, nomUsuari)).thenReturn(true);
+        when(tokenManager.isTokenActive(token)).thenReturn(true);
+
         // Simular que el mètode removeToken no fa res, ja que és void
-        doNothing().when(tokenManager).removeToken(anyString());
+        doNothing().when(tokenManager).removeToken(token);
 
         // Executar la petició de logout i fer les assertions
         mockMvc.perform(post("/api/usuaris/logout")
-                        .header("Authorization", "Bearer mockedJwtToken"))
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Logout amb èxit"));
     }

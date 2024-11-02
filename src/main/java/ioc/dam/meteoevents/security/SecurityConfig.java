@@ -58,7 +58,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/usuaris/login", "/api/usuaris/logout").permitAll()
+                        .requestMatchers("/api/usuaris/login","/api/usuaris/logout").permitAll()
+                        //.requestMatchers("/api/usuaris/logout").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class) // Afegir el filtre JWT abans del filtre d'autenticació de Spring

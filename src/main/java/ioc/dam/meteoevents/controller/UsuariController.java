@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * Controlador REST per a la gestió dels usuaris, incloent operacions d'inici de sessió i tancament de sessió.
  * Aquest controlador gestiona les peticions HTTP relacionades amb els usuaris, com ara login i logout.
@@ -64,19 +66,104 @@ public class UsuariController {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String token = authorizationHeader.substring(7);
 
-            // Eliminar el token de la memoria
-            tokenManager.removeToken(token);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            tokenManager.isTokenActive(token);
 
-            return ResponseEntity.ok("Logout amb èxit");
+            // validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                // Eliminar el token de la memòria
+                tokenManager.removeToken(token);
+                tokenManager.isTokenActive(token);
+                return ResponseEntity.ok("Logout amb èxit");
+            }
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu");
         }
-        return ResponseEntity.badRequest().body("Token no proporcionat");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("token no proporcionat");
     }
+
+    /**
+     * Endpoint per obtenir la llista de tots els usuaris.
+     *
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return una llista d'objectes {@link Usuari} amb tots els usuaris emmagatzemats.
+     * @author rhospital
+     */
+    @GetMapping
+    public ResponseEntity<List<Usuari>> llistarUsuaris(@RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                List<Usuari> usuaris = usuariService.llistarUsuaris();
+                return ResponseEntity.ok(usuaris);
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); //token invàlid o inactiu
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); //token no proporcionat
+    }
+
+    /**
+     * Endpoint per obtenir un usuari específic per identificador.
+     *
+     * @param id l'identificador únic de l'usuari que es vol obtenir.
+     * @return un {@link ResponseEntity} amb l'usuari si es troba, o un estat HTTP 404 si no es troba.
+     * @author rhospital
+     */
+    /*@GetMapping("/{id}")
+    public ResponseEntity<Usuari> obtenirUsuariPerId(@PathVariable Long id) {
+        return usuariService.obtenirUsuariPerId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }*/
+
+    /**
+     * Endpoint per afegir un nou usuari.
+     *
+     * @param usuari l'objecte {@link Usuari} amb les dades del nou usuari.
+     * @return l'objecte {@link Usuari} que s'ha afegit a la base de dades.
+     * @author rhospital
+     */
+    /*@PostMapping
+    public Usuari afegirUsuari(@RequestBody Usuari usuari) {
+        return usuariService.afegirUsuari(usuari);
+    }*/
+
+    /**
+     * Endpoint per modificar les dades d'un usuari existent.
+     *
+     * @param id l'identificador únic de l'usuari que es vol modificar.
+     * @param usuariDetalls l'objecte {@link Usuari} amb les noves dades de l'usuari.
+     * @return un {@link ResponseEntity} amb l'usuari actualitzat.
+     * @author rhospital
+     */
+    /*@PutMapping("/{id}")
+    public ResponseEntity<Usuari> modificarUsuari(@PathVariable Long id, @RequestBody Usuari usuariDetalls) {
+        return ResponseEntity.ok(usuariService.modificarUsuari(id, usuariDetalls));
+    }*/
+
+    /**
+     * Endpoint per eliminar un usuari de la base de dades.
+     *
+     * @param id l'identificador únic de l'usuari que es vol eliminar.
+     * @return un {@link ResponseEntity} amb l'estat HTTP 204 (No Content) si l'operació és satisfactòria.
+     * @author rhospital
+     */
+    /*@DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarUsuari(@PathVariable Long id) {
+        usuariService.eliminarUsuari(id);
+        return ResponseEntity.noContent().build();
+    }*/
 
     /**
      * Classe auxiliar per a la resposta del token JWT.
      * Aquesta classe encapsula la informació del token JWT i el funcional_id de l'usuari.
      * @author Generat amb IA (ChatGPT).
      * @prompt "Implementar que l'ususari, al fer login, no només obtingui el token sinó també el perfil d'usuari. Implementar-ho a la classe UsuariController"
+     * @author rhospital
      */
     public class JwtResponse {
         private String token;
@@ -120,7 +207,7 @@ public class UsuariController {
          * @return el funcionalId de l'usuari.
          * @author rhospital
          */
-        public String getFuncionalId() { // Nuevo getter
+        public String getFuncionalId() {
             return funcionalId;
         }
 
@@ -130,8 +217,9 @@ public class UsuariController {
          * @param funcionalId el funcionalId de l'usuari.
          * @author rhospital
          */
-        public void setFuncionalId(String funcionalId) { // Nuevo setter
+        public void setFuncionalId(String funcionalId) {
             this.funcionalId = funcionalId;
         }
+
     }
 }

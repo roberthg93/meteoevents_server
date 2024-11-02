@@ -82,6 +82,61 @@ public class Usuari {
     private String ultima_connexio;
 
     /**
+     * Data naixement usuari.
+     * Aquest camp és opcional (pot ser nul).
+     *
+     * @author rhospital
+     */
+    @Column
+    private String data_naixement;
+
+    /**
+     * Sexe de l'usuari.
+     * Aquest camp és opcional (pot ser nul).
+     *
+     * @author rhospital
+     */
+    @Column
+    private String sexe;
+
+    /**
+     * Població de l'usuari.
+     * Aquest camp és opcional (pot ser nul).
+     *
+     * @author rhospital
+     */
+    @Column
+    private String poblacio;
+
+    /**
+     * Correu electrònic de l'usuari.
+     * Aquest camp és opcional (pot ser nul).
+     *
+     * @author rhospital
+     */
+    @Column
+    private String email;
+
+    /**
+     * Número de telèfon de l'usuari.
+     * Aquest camp és opcional (pot ser nul).
+     *
+     * @author rhospital
+     */
+    @Column
+    private Long telefon;
+
+    /**
+     * Descripció de l'usuari.
+     * Aquest camp és opcional (pot ser nul).
+     *
+     * @author rhospital
+     */
+    @Column
+    private String descripcio;
+
+
+    /**
      * Obté la contrasenya de l'usuari.
      *
      * @return la contrasenya de l'usuari.
