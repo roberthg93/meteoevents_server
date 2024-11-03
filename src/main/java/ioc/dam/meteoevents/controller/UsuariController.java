@@ -93,7 +93,6 @@ public class UsuariController {
     public ResponseEntity<List<Usuari>> llistarUsuaris(@RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String token = authorizationHeader.substring(7);
-
             String nomUsuari = jwtUtil.extreureNomUsuari(token);
 
             // validar el token sigui correcte i actiu
@@ -113,12 +112,23 @@ public class UsuariController {
      * @return un {@link ResponseEntity} amb l'usuari si es troba, o un estat HTTP 404 si no es troba.
      * @author rhospital
      */
-    /*@GetMapping("/{id}")
-    public ResponseEntity<Usuari> obtenirUsuariPerId(@PathVariable Long id) {
-        return usuariService.obtenirUsuariPerId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }*/
+    @GetMapping("/{id}")
+    public ResponseEntity<Usuari> obtenirUsuariPerId(@PathVariable Long id, @RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                return usuariService.obtenirUsuariPerId(id)
+                        .map(ResponseEntity::ok)
+                        .orElse(ResponseEntity.notFound().build());
+                //.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); //token invàlid o inactiu
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); //token no proporcionat
+    }
 
     /**
      * Endpoint per afegir un nou usuari.
