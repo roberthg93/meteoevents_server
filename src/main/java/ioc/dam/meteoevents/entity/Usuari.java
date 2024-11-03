@@ -1,10 +1,14 @@
 package ioc.dam.meteoevents.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
 
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Classe que representa un usuari (Usuari) en el sistema.
@@ -16,6 +20,8 @@ import lombok.Setter;
  * S'utilitza JPA per a la persistència de dades i Lombok per generar automàticament
  * els getters i setters.
  *
+ * La classe implementa userDetails perquè es pugui integrar amb Spring Security
+ *
  * @author rhospital
  */
 
@@ -25,7 +31,7 @@ import lombok.Setter;
 @Getter
 @Setter
 
-public class Usuari {
+public class Usuari implements UserDetails {
     /**
      * Identificador únic de l'usuari (clau primària).
      * Generat automàticament mitjançant l'estratègia d'identificació IDENTITY.
@@ -167,6 +173,43 @@ public class Usuari {
      */
     public String getFuncional_id() {
         return funcional_id;
+    }
+
+    /**
+     * Obté el nom d'usuari (nom per iniciar sessió). Mètode obligatori per implementar el getAuthorities de UserDetails
+     *
+     * @return el nom d'usuari.
+     *
+     * @author rhospital
+     */
+    @Override
+    public String getUsername() {
+        return nomUsuari;
+    }
+
+    /**
+     * Obté la contrasenya de l'usuari. Mètode obligatori per implementar el getAuthorities de UserDetails.
+     *
+     * @return la contrasenya de l'usuari.
+     *
+     * @author rhospital
+     */
+    @Override
+    public String getPassword() {
+        return contrasenya;
+    }
+
+    /**
+     * Obtén les autoritzacions de l'usuari.
+     * Mètode necessari per integrar l'Spring Security i poder implementar el UserDetails satisfactoriament
+     * Aquest mètode mira quins rols tenen autorització per poder fer peticions. En el nostre cas no restringim a rols d'usuari
+     *
+     * @return Una col·lecció d'autoritzacions que permeten l'accés general.
+     */
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Retorna una col·lecció amb una autorització per defecte
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
 }

@@ -92,7 +92,7 @@ class UsuariControllerTest {
     @Test
     void logoutUsuariCorrecte() throws Exception {
         String token = "mockedJwtToken";
-        String nomUsuari = "mockedUsuari";
+        String nomUsuari = "admin";
 
         // Simular que extraguem el nom d'usuari correctament
         when(jwtUtil.extreureNomUsuari(token)).thenReturn(nomUsuari);

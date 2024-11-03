@@ -2,13 +2,13 @@ package ioc.dam.meteoevents.filter;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import ioc.dam.meteoevents.entity.Usuari;
+import ioc.dam.meteoevents.service.CustomUserDetailsService;
 import ioc.dam.meteoevents.service.JwtService;
 import ioc.dam.meteoevents.util.TokenManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -31,7 +31,7 @@ import java.util.Optional;
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     private TokenManager tokenManager;
@@ -40,14 +40,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
      * Constructor del filtre JwtRequestFilter.
      *
      * @param jwtService Servei per gestionar tokens JWT.
-     * @param userDetailsService Servei per carregar detalls d'usuari.
+     * @param customUserDetailsService Servei per carregar detalls d'usuari.
      * @author Generat amb IA (ChatGPT)
      * @prompt "Si el login és correcte, genera i retorna un identificador de sessió implementant JWT que s'utilitzi per totes les peticions del frontend"
      */
     @Autowired
-    public JwtRequestFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    public JwtRequestFilter(JwtService jwtService, CustomUserDetailsService customUserDetailsService) {
         this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     /**
@@ -66,33 +66,60 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
 
-        String authorizationHeader = request.getHeader("Authorization");
+        String requestURI = request.getRequestURI();
 
+        // Excloem el login de ser filtrat per JWT
+        if (requestURI.equals("/api/usuaris/login")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        String authorizationHeader = request.getHeader("Authorization");
         String jwt = null;
         String nomUsuari = null;
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
+
             try {
+                // Obtenim l'usuari a partir del token
                 Optional<Usuari> usuariOptional = jwtService.getUserFromToken(jwt);
                 if (usuariOptional.isPresent()) {
                     Usuari usuari = usuariOptional.get();
                     nomUsuari = usuari.getNomUsuari();
 
+                    // Verifiquem que l'usuari no estigui ja autenticat en el context de seguretat
                     if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(nomUsuari);
+                        UserDetails userDetails = customUserDetailsService.loadUserByUsername(nomUsuari);
 
+                        // Validem que el token sigui vàlid i actiu
                         if (userDetails != null && tokenManager.isTokenActive(jwt) && jwtService.validarToken(jwt, userDetails.getUsername())) {
                             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                             SecurityContextHolder.getContext().setAuthentication(authToken);
+                        } else {
+                            // Token inactiu o no vàlid
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            return;
                         }
                     }
+                } else {
+                    // Usuari no trobat o token invàlid
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
                 }
             } catch (ExpiredJwtException e) {
                 System.out.println("JWT expirat");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // Token expirat
+                return;
             } catch (Exception e) {
                 System.out.println("Error al procesar el JWT: " + e.getMessage());
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // Error genèric en el token
+                return;
             }
+        } else {
+            // Cap token proporcionat a la petició
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
         }
 
         chain.doFilter(request, response);

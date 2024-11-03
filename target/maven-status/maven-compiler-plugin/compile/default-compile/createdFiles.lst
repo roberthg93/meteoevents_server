@@ -8,6 +8,7 @@ ioc\dam\meteoevents\dto\UsuariDTO.class
 ioc\dam\meteoevents\util\JwtUtil.class
 ioc\dam\meteoevents\controller\UsuariController$JwtResponse.class
 ioc\dam\meteoevents\util\TokenManager.class
+ioc\dam\meteoevents\service\CustomUserDetailsService.class
 ioc\dam\meteoevents\filter\JwtRequestFilter.class
 ioc\dam\meteoevents\service\UsuariService.class
 ioc\dam\meteoevents\MeteoeventsApplication.class
