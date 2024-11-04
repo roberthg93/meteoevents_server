@@ -111,9 +111,14 @@ public class UsuariService {
      * Elimina un usuari existent de la base de dades.
      *
      * @param id l'identificador únic de l'usuari a eliminar.
+     * @return booleà en funció de si s'ha eliminat l'usuari satisfactòriament o no
      * @author rhospital
      */
-    public void eliminarUsuari(Long id) {
-        usuariRepository.deleteById(id);
+    public boolean  eliminarUsuari(Long id) {
+        if (usuariRepository.existsById(id)) {
+            usuariRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

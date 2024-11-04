@@ -109,6 +109,7 @@ public class UsuariController {
      * Endpoint per obtenir un usuari específic per identificador.
      *
      * @param id l'identificador únic de l'usuari que es vol obtenir.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
      * @return un {@link ResponseEntity} amb l'usuari si es troba, o un estat HTTP 404 si no es troba.
      * @author rhospital
      */
@@ -125,48 +126,108 @@ public class UsuariController {
                         .orElse(ResponseEntity.notFound().build());
                 //.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
             }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); //token invàlid o inactiu
+            //token invàlid o inactiu
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); //token no proporcionat
+        //token no proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
 
     /**
      * Endpoint per afegir un nou usuari.
      *
      * @param usuari l'objecte {@link Usuari} amb les dades del nou usuari.
-     * @return l'objecte {@link Usuari} que s'ha afegit a la base de dades.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb el nou usuari creat i l'estat HTTP 201 si s'ha creat correctament,
+     * o un estat HTTP 401 si el token és invàlid.
      * @author rhospital
      */
-    /*@PostMapping
-    public Usuari afegirUsuari(@RequestBody Usuari usuari) {
-        return usuariService.afegirUsuari(usuari);
-    }*/
+    @PostMapping
+    public ResponseEntity<Usuari> afegirUsuari(@RequestBody Usuari usuari, @RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                Usuari nouUsuari = usuariService.afegirUsuari(usuari);
+                return ResponseEntity.status(HttpStatus.CREATED).body(nouUsuari);
+            } else {
+                // Token invàlid o inactiu
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+    }
 
     /**
      * Endpoint per modificar les dades d'un usuari existent.
      *
      * @param id l'identificador únic de l'usuari que es vol modificar.
      * @param usuariDetalls l'objecte {@link Usuari} amb les noves dades de l'usuari.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
      * @return un {@link ResponseEntity} amb l'usuari actualitzat.
      * @author rhospital
      */
-    /*@PutMapping("/{id}")
-    public ResponseEntity<Usuari> modificarUsuari(@PathVariable Long id, @RequestBody Usuari usuariDetalls) {
-        return ResponseEntity.ok(usuariService.modificarUsuari(id, usuariDetalls));
-    }*/
+    @PutMapping("/{id}")
+    public ResponseEntity<String> modificarUsuari(
+            @PathVariable Long id,
+            @RequestBody Usuari usuariDetalls,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        // Comprova que el token JWT està present i és vàlid
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                Usuari usuariModificat = usuariService.modificarUsuari(id, usuariDetalls);
+                if (usuariModificat != null) {
+                    return ResponseEntity.ok("Usuari actualitzat correctament.");
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuari no trobat.");
+                }
+            }
+            // Token invàlid o inactiu
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
+    }
+
 
     /**
      * Endpoint per eliminar un usuari de la base de dades.
      *
      * @param id l'identificador únic de l'usuari que es vol eliminar.
-     * @return un {@link ResponseEntity} amb l'estat HTTP 204 (No Content) si l'operació és satisfactòria.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb un missatge d'èxit si l'usuari s'ha eliminat, o un estat HTTP adequat en cas d'error.
      * @author rhospital
      */
-    /*@DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarUsuari(@PathVariable Long id) {
-        usuariService.eliminarUsuari(id);
-        return ResponseEntity.noContent().build();
-    }*/
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarUsuariPerId(@PathVariable Long id, @RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // validar que el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                boolean eliminat = usuariService.eliminarUsuari(id);
+
+                if (eliminat) {
+                    return ResponseEntity.ok("Usuari eliminat amb èxit.");
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuari no trobat.");
+                }
+            }
+            // Token invàlid o inactiu
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
+    }
 
     /**
      * Classe auxiliar per a la resposta del token JWT.
