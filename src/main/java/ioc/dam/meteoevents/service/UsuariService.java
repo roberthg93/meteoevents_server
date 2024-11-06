@@ -1,10 +1,12 @@
 package ioc.dam.meteoevents.service;
 
 import ioc.dam.meteoevents.entity.Usuari;
+import ioc.dam.meteoevents.repository.EsdevenimentUsuariRepository;
 import ioc.dam.meteoevents.repository.UsuariRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +23,9 @@ public class UsuariService {
 
     @Autowired
     private UsuariRepository usuariRepository;
+
+    @Autowired
+    private EsdevenimentUsuariRepository esdevenimentUsuariRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -110,12 +115,19 @@ public class UsuariService {
     /**
      * Elimina un usuari existent de la base de dades.
      *
+     * L'anotació @Transactional és necessària per assegurar-se que les operacions de persistència com delete,
+     * que n'hi ha dues, es realitzin dins d'una transacció
+     *
      * @param id l'identificador únic de l'usuari a eliminar.
      * @return booleà en funció de si s'ha eliminat l'usuari satisfactòriament o no
      * @author rhospital
      */
+    @Transactional
     public boolean  eliminarUsuari(Long id) {
         if (usuariRepository.existsById(id)) {
+            // Eliminar primer les associacions de l'usuari amb els esdeveniments
+            esdevenimentUsuariRepository.deleteByIdUsuari(id);
+            // Eliminar usuari
             usuariRepository.deleteById(id);
             return true;
         }
