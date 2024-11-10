@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 /**
  * Proves d'integració per UsuariController.
  * Aquesta classe prova el controlador com una unitat completa amb MockMvc,
- * verificant el login, logout i la generació de tokens.
+ * verificant el login, logout, la generació de tokens i la resta d'endpoints d'Usuari (llistar, afegir, eliminar, editar)
  *
  * @author rhospital
  */
