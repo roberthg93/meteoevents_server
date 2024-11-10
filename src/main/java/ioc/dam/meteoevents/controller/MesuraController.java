@@ -1,5 +1,6 @@
 package ioc.dam.meteoevents.controller;
 
+import ioc.dam.meteoevents.entity.Esdeveniment;
 import ioc.dam.meteoevents.entity.Mesura;
 import ioc.dam.meteoevents.service.MesuraService;
 import ioc.dam.meteoevents.util.JwtUtil;
@@ -173,5 +174,34 @@ public class MesuraController {
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
+    }
+
+    /**
+     * Endpoint per obtenir els esdeveniments assignats a una mesura de seguretat
+     *
+     * @param idMesura l'identificador únic de la mesura de la qual es volen conèixer els esdeveniments assignats.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb un missatge d'èxit o un estat HTTP adequat en cas d'error.
+     * @author rhospital
+     */
+    @GetMapping("/{id}/esdeveniments")
+    public ResponseEntity<List<Esdeveniment>> obtenirEsdevenimentsPerMesura(@PathVariable("id") Integer idMesura,
+                                                                            @RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                // mètode per obtenir llista d'esdeveniments
+                List<Esdeveniment> esdeveniments = mesuraService.obtenirEsdevenimentsPerMesura(idMesura);
+                return ResponseEntity.ok(esdeveniments);
+            } else {
+                // Token invàlid o inactiu
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
 }

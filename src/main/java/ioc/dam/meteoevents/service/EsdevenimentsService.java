@@ -1,15 +1,14 @@
 package ioc.dam.meteoevents.service;
 
-import ioc.dam.meteoevents.entity.Esdeveniment;
-import ioc.dam.meteoevents.repository.EsdevenimentRepository;
-import ioc.dam.meteoevents.repository.EsdevenimentUsuariRepository;
-import ioc.dam.meteoevents.repository.MesuraEsdevenimentRepository;
+import ioc.dam.meteoevents.entity.*;
+import ioc.dam.meteoevents.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Classe de servei per a la gestió de les operacions relacionades amb els esdeveniments.
@@ -26,6 +25,12 @@ public class EsdevenimentsService {
 
     @Autowired
     private MesuraEsdevenimentRepository mesuraEsdevenimentRepository;
+
+    @Autowired
+    private UsuariRepository usuariRepository;
+
+    @Autowired
+    private MesuraRepository mesuraRepository;
 
     /**
      * Retorna una llista de tots els esdeveniments.
@@ -107,5 +112,45 @@ public class EsdevenimentsService {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Obté la llista d'Usuaris en funció de l'Id de l'esdeveniment
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment a cercar usuaris assignats.
+     * @return List<Usuari>
+     * @author rhospital
+     */
+    public List<Usuari> obtenirUsuarisPerEsdeveniment(Integer idEsdeveniment) {
+        // Obtenim totes les associacions d'usuaris per a l'esdeveniment especificat
+        List<EsdevenimentUsuari> associacions = esdevenimentUsuariRepository.findByIdEsdeveniment(Long.valueOf(idEsdeveniment));
+
+        // Extraiem els ids d'usuaris de les associacions
+        List<Long> idsUsuaris = associacions.stream()
+                .map(EsdevenimentUsuari::getIdUsuari)
+                .collect(Collectors.toList());
+
+        // Retornem els usuaris corresponents als ids obtinguts
+        return usuariRepository.findAllById(idsUsuaris);
+    }
+
+    /**
+     * Obté la llista de Mesures en funció de l'Id de l'esdeveniment
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment a cercar mesures assignades.
+     * @return List<Mesura>
+     * @author rhospital
+     */
+    public List<Mesura> obtenirMesuresPerEsdeveniment(Integer idEsdeveniment) {
+        // Obtenim totes les associacions de mesures per a l'esdeveniment especificat
+        List<MesuraEsdeveniment> associacions = mesuraEsdevenimentRepository.findByIdEsdeveniment(idEsdeveniment);
+
+        // Extraiem els ids de mesures de les associacions
+        List<Integer> idsMesures = associacions.stream()
+                .map(MesuraEsdeveniment::getIdMesura)
+                .collect(Collectors.toList());
+
+        // Retornem les mesures corresponents als ids obtinguts
+        return mesuraRepository.findAllById(idsMesures);
     }
 }

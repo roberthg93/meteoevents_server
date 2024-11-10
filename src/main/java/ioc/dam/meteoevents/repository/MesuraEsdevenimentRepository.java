@@ -1,9 +1,12 @@
 package ioc.dam.meteoevents.repository;
 
+import ioc.dam.meteoevents.entity.EsdevenimentUsuari;
 import ioc.dam.meteoevents.entity.MesuraEsdeveniment;
 import ioc.dam.meteoevents.entity.MesuraEsdevenimentId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * Repositori per a l'entitat {@link MesuraEsdeveniment}.
@@ -13,6 +16,22 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface MesuraEsdevenimentRepository extends JpaRepository<MesuraEsdeveniment, MesuraEsdevenimentId> {
+    /**
+     * Troba totes les associacions per a una mesura específica, basant-se en el seu id.
+     *
+     * @param idMesura identificador de la mesura.
+     * @return llista de MesuraEsdeveniment associats a aquesta mesura.
+     */
+    List<MesuraEsdeveniment> findByIdMesura(Integer idMesura);
+
+    /**
+     * Troba totes les associacions per a un esdeveniment específic, basant-se en el seu id.
+     *
+     * @param idEsdeveniment identificador de l'esdeveniment.
+     * @return llista de MesuraEsdeveniment associats a aquest esdeveniment.
+     */
+    List<MesuraEsdeveniment> findByIdEsdeveniment(Integer idEsdeveniment);
+
     /**
      * Elimina totes les associacions per a una mesura específica.
      *

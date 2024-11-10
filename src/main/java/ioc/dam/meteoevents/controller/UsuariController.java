@@ -1,5 +1,6 @@
 package ioc.dam.meteoevents.controller;
 
+import ioc.dam.meteoevents.entity.Esdeveniment;
 import ioc.dam.meteoevents.entity.Usuari;
 import ioc.dam.meteoevents.service.UsuariService;
 import ioc.dam.meteoevents.util.JwtUtil;
@@ -227,6 +228,35 @@ public class UsuariController {
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
+    }
+
+    /**
+     * Endpoint per obtenir els esdeveniments assignats a un usuari.
+     *
+     * @param idUsuari l'identificador únic de l'usuari del qual es volen conèixer els esdeveniments assignats.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb un missatge d'èxit o un estat HTTP adequat en cas d'error.
+     * @author rhospital
+     */
+    @GetMapping("/{id}/esdeveniments")
+    public ResponseEntity<List<Esdeveniment>> obtenirEsdevenimentsPerUsuari(@PathVariable("id") Long idUsuari,
+                                                                             @RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                // mètode per obtenir llista d'esdeveniments
+                List<Esdeveniment> esdeveniments = usuariService.obtenirEsdevenimentsPerUsuari(idUsuari);
+                return ResponseEntity.ok(esdeveniments);
+            } else {
+                // Token invàlid o inactiu
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
 
     /**

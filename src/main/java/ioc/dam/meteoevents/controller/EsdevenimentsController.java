@@ -1,6 +1,8 @@
 package ioc.dam.meteoevents.controller;
 
 import ioc.dam.meteoevents.entity.Esdeveniment;
+import ioc.dam.meteoevents.entity.Mesura;
+import ioc.dam.meteoevents.entity.Usuari;
 import ioc.dam.meteoevents.service.EsdevenimentsService;
 import ioc.dam.meteoevents.util.JwtUtil;
 import ioc.dam.meteoevents.util.TokenManager;
@@ -178,5 +180,63 @@ public class EsdevenimentsController {
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
+    }
+
+    /**
+     * Endpoint per obtenir els usuaris assignats a un esdeveniment.
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment del qual es volen conèixer els usuaris assignats.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb un missatge d'èxit o un estat HTTP adequat en cas d'error.
+     * @author rhospital
+     */
+    @GetMapping("/{id}/usuaris")
+    public ResponseEntity<List<Usuari>> obtenirUsuarisPerEsdeveniment(@PathVariable("id") Integer idEsdeveniment,
+                                                                      @RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                // mètode per obtenir llista usuaris
+                List<Usuari> usuaris = esdevenimentsService.obtenirUsuarisPerEsdeveniment(idEsdeveniment);
+                return ResponseEntity.ok(usuaris);
+            } else {
+                // Token invàlid o inactiu
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+    }
+
+    /**
+     * Endpoint per obtenir les mesures de seguretat assignades a un esdeveniment.
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment del qual es volen conèixer les mesures assignades.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb un missatge d'èxit o un estat HTTP adequat en cas d'error.
+     * @author rhospital
+     */
+    @GetMapping("/{id}/mesures")
+    public ResponseEntity<List<Mesura>> obtenirMesuresPerEsdeveniment(@PathVariable("id") Integer idEsdeveniment,
+                                                                      @RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                // mètode per obtenir llista mesures
+                List<Mesura> mesures = esdevenimentsService.obtenirMesuresPerEsdeveniment(idEsdeveniment);
+                return ResponseEntity.ok(mesures);
+            } else {
+                // Token invàlid o inactiu
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
 }

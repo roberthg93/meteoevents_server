@@ -1,6 +1,9 @@
 package ioc.dam.meteoevents.service;
 
+import ioc.dam.meteoevents.entity.Esdeveniment;
+import ioc.dam.meteoevents.entity.EsdevenimentUsuari;
 import ioc.dam.meteoevents.entity.Usuari;
+import ioc.dam.meteoevents.repository.EsdevenimentRepository;
 import ioc.dam.meteoevents.repository.EsdevenimentUsuariRepository;
 import ioc.dam.meteoevents.repository.UsuariRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Classe de servei per a la gestió de les operacions relacionades amb els usuaris.
@@ -26,6 +30,9 @@ public class UsuariService {
 
     @Autowired
     private EsdevenimentUsuariRepository esdevenimentUsuariRepository;
+
+    @Autowired
+    private EsdevenimentRepository esdevenimentRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -132,5 +139,25 @@ public class UsuariService {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Obté la llista d'Esdeveniments en funció de l'Id de l'Usuari
+     *     *
+     * @param idUsuari l'identificador únic de l'usuari a cercar esdeveniments assignats.
+     * @return List<Usuari>
+     * @author rhospital
+     */
+    public List<Esdeveniment> obtenirEsdevenimentsPerUsuari(Long idUsuari) {
+        // Obtenim totes les associacions d'esdeveniments per a l'usuari especificat
+        List<EsdevenimentUsuari> associacions = esdevenimentUsuariRepository.findByIdUsuari(idUsuari);
+
+        // Extraiem els ids d'esdeveniments de les associacions i convertim Long a Integer
+        List<Integer> idsEsdeveniments = associacions.stream()
+                .map(esdevenimentUsuari -> esdevenimentUsuari.getIdEsdeveniment().intValue())
+                .collect(Collectors.toList());
+
+        // Retornem els usuaris corresponents als ids obtinguts
+        return esdevenimentRepository.findAllById(idsEsdeveniments);
     }
 }

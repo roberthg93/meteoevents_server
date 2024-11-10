@@ -1,6 +1,9 @@
 package ioc.dam.meteoevents.service;
 
+import ioc.dam.meteoevents.entity.Esdeveniment;
 import ioc.dam.meteoevents.entity.Mesura;
+import ioc.dam.meteoevents.entity.MesuraEsdeveniment;
+import ioc.dam.meteoevents.repository.EsdevenimentRepository;
 import ioc.dam.meteoevents.repository.MesuraEsdevenimentRepository;
 import ioc.dam.meteoevents.repository.MesuraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Classe de servei per a la gestió de les operacions relacionades amb les mesures.
@@ -19,6 +23,9 @@ import java.util.Optional;
 public class MesuraService {
     @Autowired
     private MesuraRepository mesuraRepository;
+
+    @Autowired
+    private EsdevenimentRepository esdevenimentRepository;
 
     @Autowired
     private MesuraEsdevenimentRepository mesuraEsdevenimentRepository;
@@ -97,5 +104,25 @@ public class MesuraService {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Obté la llista d'Esdeveniments en funció de l'Id de la Mesura
+     *
+     * @param idMesura l'identificador únic de la mesura a cercar esdeveniments assignats.
+     * @return List<Esdeveniment>
+     * @author rhospital
+     */
+    public List<Esdeveniment> obtenirEsdevenimentsPerMesura(Integer idMesura) {
+        // Obtenim totes les associacions d'esdeveniments per a la mesura especificada
+        List<MesuraEsdeveniment> associacions = mesuraEsdevenimentRepository.findByIdMesura(idMesura);
+
+        // Extraiem els ids d'esdeveniments de les associacions
+        List<Integer> idsEsdeveniments = associacions.stream()
+                .map(MesuraEsdeveniment::getIdEsdeveniment)
+                .collect(Collectors.toList());
+
+        // Retornem els usuaris corresponents als ids obtinguts
+        return esdevenimentRepository.findAllById(idsEsdeveniments);
     }
 }
