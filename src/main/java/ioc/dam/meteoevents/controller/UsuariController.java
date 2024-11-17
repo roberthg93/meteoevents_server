@@ -48,7 +48,7 @@ public class UsuariController {
 
         if (usuari != null) {
             String token = jwtUtil.generarToken(nomUsuari);
-            return ResponseEntity.ok(new JwtResponse(token, usuari.getFuncional_id()));
+            return ResponseEntity.ok(new JwtResponse(token, usuari.getFuncional_id(), usuari.getId()));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Tornarà un error 401 sense cos
         }
@@ -269,6 +269,7 @@ public class UsuariController {
     public class JwtResponse {
         private String token;
         private String funcionalId; // Nou camp per funcional_id
+        private Long usuariId;
 
         /**
          * Constructor per inicialitzar el token i el funcionalId.
@@ -277,9 +278,10 @@ public class UsuariController {
          * @param funcionalId l'identificador funcional de l'usuari.
          * @author rhospital
          */
-        public JwtResponse(String token, String funcionalId) {
+        public JwtResponse(String token, String funcionalId, Long usuariId) {
             this.token = token;
             this.funcionalId = funcionalId; // Inicializa el nuevo campo
+            this.usuariId = usuariId;
         }
 
         /**
@@ -320,6 +322,26 @@ public class UsuariController {
          */
         public void setFuncionalId(String funcionalId) {
             this.funcionalId = funcionalId;
+        }
+
+        /**
+         * Retorna el usuariId de l'usuari.
+         *
+         * @return el usuariId de l'usuari.
+         * @author rhospital
+         */
+        public Long getUsuariId() {
+            return usuariId;
+        }
+
+        /**
+         * Estableix el usuariId de l'usuari.
+         *
+         * @param usuariId el funcionalId de l'usuari.
+         * @author rhospital
+         */
+        public void setUsuariId(Long usuariId) {
+            this.usuariId = usuariId;
         }
 
     }
