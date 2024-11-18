@@ -30,6 +30,7 @@ public class MesuraController {
 
     @Autowired
     private TokenManager tokenManager;
+    private List<Esdeveniment> esdeveniments;
 
     /**
      * Endpoint per obtenir la llista de totes les mesures.
@@ -194,7 +195,7 @@ public class MesuraController {
             // validar el token sigui correcte i actiu
             if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
                 // mètode per obtenir llista d'esdeveniments
-                List<Esdeveniment> esdeveniments = mesuraService.obtenirEsdevenimentsPerMesura(idMesura);
+                List<Esdeveniment> esdeveniments = esdeveniments;
                 return ResponseEntity.ok(esdeveniments);
             } else {
                 // Token invàlid o inactiu

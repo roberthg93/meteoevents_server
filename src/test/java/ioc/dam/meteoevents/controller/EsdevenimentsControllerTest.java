@@ -1,6 +1,7 @@
 package ioc.dam.meteoevents.controller;
 
 import ioc.dam.meteoevents.entity.Esdeveniment;
+import ioc.dam.meteoevents.entity.Usuari;
 import ioc.dam.meteoevents.service.EsdevenimentsService;
 import ioc.dam.meteoevents.util.JwtUtil;
 import ioc.dam.meteoevents.util.TokenManager;
@@ -234,4 +235,53 @@ class EsdevenimentsControllerTest {
                 .andExpect(jsonPath("$.organitzador").value("Klassmark"))
                 .andExpect(jsonPath("$.poblacio").value("Girona"));
     }
+
+    /**
+     * Prova del mètode obtenirUsuarisPerEsdeveniment.
+     * Verifica que l'endpoint retorni una llista d'usuaris en format JSON amb un codi de resposta 200,
+     * o el codi d'error adequat segons el cas.
+     *
+     * @throws Exception en cas d'error en la prova d'integració.
+     */
+    @Test
+    void obtenirUsuarisPerEsdeveniment() throws Exception {
+        // Dades activació token
+        String nomUsuari = "admin";
+        String token = "mockedJwtToken";
+
+        // Dades del test: identificador de l'esdeveniment
+        Integer idEsdeveniment = 1;
+
+        // Crear usuaris simulats per l'esdeveniment
+        //Usuari usuari1 = new Usuari();
+        //usuari1.setId(3L);
+        //usuari1.setNomUsuari("jvidal");
+
+       // Usuari usuari2 = new Usuari();
+        //usuari2.setId(1L);
+        //usuari2.setNomUsuari("admin");
+
+        //List<Usuari> usuaris = Arrays.asList(usuari1, usuari2);
+
+        // Simular que extraguem el nom d'usuari correctament
+        when(jwtUtil.extreureNomUsuari(token)).thenReturn(nomUsuari);
+
+        // Simular que el token es valid i està actiu
+        when(jwtUtil.validarToken(token, nomUsuari)).thenReturn(true);
+        when(tokenManager.isTokenActive(token)).thenReturn(true);
+
+        // Configurar el comportament del servei mock
+        //when(esdevenimentsService.obtenirUsuarisPerEsdeveniment(idEsdeveniment)).thenReturn(usuaris);
+
+        // Realitzar la petició GET
+        mockMvc.perform(get("/api/esdeveniments/{id}/usuaris", idEsdeveniment)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].nomUsuari").value("admin"))
+                .andExpect(jsonPath("$[1].id").value(3))
+                .andExpect(jsonPath("$[1].nomUsuari").value("jvidal"));
+    }
+
 }

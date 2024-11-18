@@ -1,5 +1,6 @@
 package ioc.dam.meteoevents.controller;
 
+import ioc.dam.meteoevents.entity.Esdeveniment;
 import ioc.dam.meteoevents.entity.Mesura;
 import ioc.dam.meteoevents.service.MesuraService;
 import ioc.dam.meteoevents.util.JwtUtil;
@@ -229,4 +230,38 @@ class MesuraControllerTest {
                 .andExpect(jsonPath("$.valorUm").value("km/h"))
                 .andExpect(jsonPath("$.accio").value("desmontar pancartes, fixar escenari"));
     }
+
+    /**
+     * Prova del mètode que obté els esdeveniments assignats a una mesura.
+     * Verifica que l'endpoint retorni una llista d'esdeveniments en format JSON amb un codi de resposta 200.
+     *
+     * @throws Exception en cas d'error en la prova d'integració.
+     * @autor rhospital
+     */
+    @Test
+    void obtenirEsdevenimentsPerMesura_esdevenimentsTrobats() throws Exception {
+        // Dades d'activació token
+        String nomUsuari = "admin";
+        String token = "mockedJwtToken";
+
+        // ID de la mesura de seguretat
+        Integer idMesura = 1;
+
+        // Simular que extraguem el nom d'usuari correctament
+        when(jwtUtil.extreureNomUsuari(token)).thenReturn(nomUsuari);
+
+        // Simular que el token és vàlid i està actiu
+        when(jwtUtil.validarToken(token, nomUsuari)).thenReturn(true);
+        when(tokenManager.isTokenActive(token)).thenReturn(true);
+
+        // Simular la crida GET amb el token d'autenticació
+        mockMvc.perform(get("/api/mesures/{id}/esdeveniments", idMesura)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].nom").value("IV The Traka"))
+                .andExpect(jsonPath("$[0].organitzador").value("Klassmark"));
+    }
+
 }
