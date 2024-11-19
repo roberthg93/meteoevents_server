@@ -195,7 +195,7 @@ public class MesuraController {
             // validar el token sigui correcte i actiu
             if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
                 // mètode per obtenir llista d'esdeveniments
-                List<Esdeveniment> esdeveniments = esdeveniments;
+                List<Esdeveniment> esdeveniments = mesuraService.obtenirEsdevenimentsPerMesura(idMesura);;
                 return ResponseEntity.ok(esdeveniments);
             } else {
                 // Token invàlid o inactiu
