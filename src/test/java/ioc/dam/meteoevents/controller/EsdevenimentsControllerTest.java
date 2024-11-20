@@ -252,17 +252,6 @@ class EsdevenimentsControllerTest {
         // Dades del test: identificador de l'esdeveniment
         Integer idEsdeveniment = 1;
 
-        // Crear usuaris simulats per l'esdeveniment
-        //Usuari usuari1 = new Usuari();
-        //usuari1.setId(3L);
-        //usuari1.setNomUsuari("jvidal");
-
-       // Usuari usuari2 = new Usuari();
-        //usuari2.setId(1L);
-        //usuari2.setNomUsuari("admin");
-
-        //List<Usuari> usuaris = Arrays.asList(usuari1, usuari2);
-
         // Simular que extraguem el nom d'usuari correctament
         when(jwtUtil.extreureNomUsuari(token)).thenReturn(nomUsuari);
 
