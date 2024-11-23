@@ -2,10 +2,12 @@ package ioc.dam.meteoevents.repository;
 
 import ioc.dam.meteoevents.entity.EsdevenimentUsuari;
 import ioc.dam.meteoevents.entity.EsdevenimentUsuariId;
+import ioc.dam.meteoevents.entity.MesuraEsdeveniment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repositori per gestionar les operacions de persistència per a l'entitat EsdevenimentUsuari.
@@ -33,6 +35,15 @@ public interface EsdevenimentUsuariRepository extends JpaRepository<Esdeveniment
      * @return llista d'EsdevenimentUsuari associats a aquest esdeveniment.
      */
     List<EsdevenimentUsuari> findByIdEsdeveniment(Long idEsdeveniment);
+
+    /**
+     * Troba totes les associacions per a un esdeveniment específic i un Usuari específic, basant-se en el seus ids.
+     *
+     * @param idEsdeveniment identificador de l'esdeveniment.
+     * @param idUsuari identificador de l'usuari.
+     * @return llista de EsdevenimentUsuari associats a aquest esdeveniment i usuari
+     */
+    Optional<EsdevenimentUsuari> findByIdEsdevenimentAndIdUsuari(Integer idEsdeveniment, Long idUsuari);
 
     /**
      * Elimina totes les associacions per a un usuari específic.

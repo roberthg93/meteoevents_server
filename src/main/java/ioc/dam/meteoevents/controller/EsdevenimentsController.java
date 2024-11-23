@@ -239,4 +239,154 @@ public class EsdevenimentsController {
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
+
+    /**
+     * Endpoint per afegir un Usuari a un Esdeveniment.
+     *
+     * @param idEsdeveniment l'identificador de l'esdeveniment al qual s'ha d'afegir l'usuari.
+     * @param idUsuari l'identificador de l'ususari que s'ha d'afegir a l'esdeveniment.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb un missatge d'èxit o un estat HTTP adequat en cas d'error.
+     * @author rhospital
+     */
+    @PostMapping("/{idEsdeveniment}/usuaris/{idUsuari}")
+    public ResponseEntity<String> afegirUsuariAEsdeveniment(
+            @PathVariable Integer idEsdeveniment,
+            @PathVariable Long idUsuari,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // Validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                boolean afegitCorrectament = esdevenimentsService.afegirUsuariAEsdeveniment(idEsdeveniment, idUsuari);
+
+                if (afegitCorrectament) {
+                    return ResponseEntity.ok("Usuari afegit correctament a l'esdeveniment.");
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Esdeveniment o Usuari no trobats.");
+                }
+            }
+            // Token invàlid o inactiu
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
+    }
+
+    /**
+     * Endpoint per afegir una Mesura a un Esdeveniment.
+     *
+     * @param idEsdeveniment l'identificador de l'esdeveniment al qual s'ha d'afegir la mesura.
+     * @param idMesura l'identificador de la mesura que s'ha d'afegir a l'esdeveniment.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb un missatge d'èxit o un estat HTTP adequat en cas d'error.
+     * @author rhospital
+     */
+    @PostMapping("/{idEsdeveniment}/mesures/{idMesura}")
+    public ResponseEntity<String> afegirMesuraAEsdeveniment(
+            @PathVariable Integer idEsdeveniment,
+            @PathVariable Integer idMesura,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // Validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                boolean afegitCorrectament = esdevenimentsService.afegirMesuraAEsdeveniment(idEsdeveniment, idMesura);
+
+                if (afegitCorrectament) {
+                    return ResponseEntity.ok("Mesura afegida correctament a l'esdeveniment.");
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Esdeveniment o Mesura no trobats.");
+                }
+            }
+            // Token invàlid o inactiu
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
+    }
+
+    /**
+     * Endpoint per eliminar un usuari assignat a un esdeveniment.
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment.
+     * @param idUsuari l'identificador únic de l'usuari que es vol eliminar de l'esdeveniment.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb un missatge d'èxit o un estat HTTP adequat en cas d'error.
+     * @author rh
+     */
+    @DeleteMapping("/{idEsdeveniment}/usuaris/{idUsuari}")
+    public ResponseEntity<String> eliminarUsuariAssignatEsdeveniment(
+            @PathVariable("idEsdeveniment") Integer idEsdeveniment,
+            @PathVariable("idUsuari") Long idUsuari,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // Validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                // Crida al servei per eliminar l'usuari assignat a l'esdeveniment
+                boolean eliminada = esdevenimentsService.eliminarUsuariAssignatEsdeveniment(idEsdeveniment, idUsuari);
+
+                if (eliminada) {
+                    return ResponseEntity.ok("Usuari eliminat correctament de l'esdeveniment.");
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body("No s'ha trobat l'usuari o no està assignat a l'esdeveniment.");
+                }
+            }
+            // Token invàlid o inactiu
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
+    }
+
+    /**
+     * Endpoint per eliminar una mesura assignada a un esdeveniment.
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment.
+     * @param idMesura l'identificador únic de la mesura que es vol eliminar de l'esdeveniment.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb un missatge d'èxit o un estat HTTP adequat en cas d'error.
+     * @author rh
+     */
+    @DeleteMapping("/{idEsdeveniment}/mesures/{idMesura}")
+    public ResponseEntity<String> eliminarMesuraAssignadaEsdeveniment(
+            @PathVariable("idEsdeveniment") Integer idEsdeveniment,
+            @PathVariable("idMesura") Integer idMesura,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // Validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                // Crida al servei per eliminar la mesura assignada a l'esdeveniment
+                boolean eliminada = esdevenimentsService.eliminarMesuraAssignadaEsdeveniment(idEsdeveniment, idMesura);
+
+                if (eliminada) {
+                    return ResponseEntity.ok("Mesura eliminada correctament de l'esdeveniment.");
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body("No s'ha trobat la mesura o no està assignada a l'esdeveniment.");
+                }
+            }
+            // Token invàlid o inactiu
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
+    }
+
+
 }

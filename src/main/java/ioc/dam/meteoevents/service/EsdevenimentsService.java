@@ -153,4 +153,108 @@ public class EsdevenimentsService {
         // Retornem les mesures corresponents als ids obtinguts
         return mesuraRepository.findAllById(idsMesures);
     }
+
+    /**
+     * Afegeix un Usuari a un Esdeveniment determinat
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment a associar l'usuari
+     * @param idUsuari l'identificador únic de l'usuari a afegir
+     * @return booleà en funció de si s'ha afegit la Mesura o no
+     * @author rhospital
+     */
+    public boolean afegirUsuariAEsdeveniment(Integer idEsdeveniment, Long idUsuari) {
+        Optional<Esdeveniment> esdeveniment = obtenirEsdevenimentPerId(idEsdeveniment);
+        Optional<Usuari> usuari = usuariRepository.findById(idUsuari);
+
+        if (esdeveniment.isPresent() && usuari.isPresent()) {
+            // Crear l'entitat que relaciona l'Esdeveniment i l'Usuari
+            EsdevenimentUsuari novaRelacio = new EsdevenimentUsuari();
+            novaRelacio.setIdEsdeveniment(Long.valueOf(idEsdeveniment));
+            novaRelacio.setIdUsuari(idUsuari);
+
+            // Desar la relació
+            esdevenimentUsuariRepository.save(novaRelacio);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Afegeix una Mesura de prevenció a un Esdeveniment determinat
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment a associar la mesura
+     * @param idMesura l'identificador únic de la mesura a afegir
+     * @return booleà en funció de si s'ha afegit la Mesura o no
+     * @author rhospital
+     */
+    public boolean afegirMesuraAEsdeveniment(Integer idEsdeveniment, Integer idMesura) {
+        Optional<Esdeveniment> esdeveniment = obtenirEsdevenimentPerId(idEsdeveniment);
+        Optional<Mesura> mesura = mesuraRepository.findById(idMesura);
+
+        if (esdeveniment.isPresent() && mesura.isPresent()) {
+            // Crear l'entitat que relaciona l'Esdeveniment i la Mesura
+            MesuraEsdeveniment novaRelacio = new MesuraEsdeveniment();
+            novaRelacio.setIdEsdeveniment(idEsdeveniment);
+            novaRelacio.setIdMesura(idMesura);
+
+            // Desar la relació
+            mesuraEsdevenimentRepository.save(novaRelacio);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Elimina un Usuari assignat a un Esdeveniment determinat
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment a eliminar l'usuari
+     * @param idUsuari l'identificador únic de l'usuari a eliminar
+     * @return booleà en funció de si s'ha eliminat l'Usuari o no
+     * @author rhospital
+     */
+    public boolean eliminarUsuariAssignatEsdeveniment(Integer idEsdeveniment, Long idUsuari) {
+        // Verifica que l'esdeveniment i l'usuari existeixin
+        Optional<Esdeveniment> esdeveniment = obtenirEsdevenimentPerId(idEsdeveniment);
+        Optional<Usuari> usuari = usuariRepository.findById(idUsuari);
+
+        if (esdeveniment.isPresent() && usuari.isPresent()) {
+            // Comprova que l'usuari està assignat a l'esdeveniment
+            Optional<EsdevenimentUsuari> assignacio = esdevenimentUsuariRepository
+                    .findByIdEsdevenimentAndIdUsuari(idEsdeveniment, idUsuari);
+
+            if (assignacio.isPresent()) {
+                esdevenimentUsuariRepository.delete(assignacio.get());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Elimina una Mesura de prevenció assignada a un Esdeveniment determinat
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment a eliminar la mesura
+     * @param idMesura l'identificador únic de la mesura a eliminar
+     * @return booleà en funció de si s'ha eliminat la Mesura o no
+     * @author rhospital
+     */
+    public boolean eliminarMesuraAssignadaEsdeveniment(Integer idEsdeveniment, Integer idMesura) {
+        // Verifica que l'esdeveniment i la mesura existeixin
+        Optional<Esdeveniment> esdeveniment = obtenirEsdevenimentPerId(idEsdeveniment);
+        Optional<Mesura> mesura = mesuraRepository.findById(idMesura);
+
+        if (esdeveniment.isPresent() && mesura.isPresent()) {
+            // Comprova que la mesura està assignada a l'esdeveniment
+            Optional<MesuraEsdeveniment> assignacio = mesuraEsdevenimentRepository
+                    .findByIdEsdevenimentAndIdMesura(idEsdeveniment, idMesura);
+
+            if (assignacio.isPresent()) {
+                mesuraEsdevenimentRepository.delete(assignacio.get());
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

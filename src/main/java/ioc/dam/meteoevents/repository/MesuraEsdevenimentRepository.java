@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repositori per a l'entitat {@link MesuraEsdeveniment}.
@@ -31,6 +32,16 @@ public interface MesuraEsdevenimentRepository extends JpaRepository<MesuraEsdeve
      * @return llista de MesuraEsdeveniment associats a aquest esdeveniment.
      */
     List<MesuraEsdeveniment> findByIdEsdeveniment(Integer idEsdeveniment);
+
+    /**
+     * Troba totes les associacions per a un esdeveniment específic i una mesura específica
+     *
+     * @param idEsdeveniment identificador de l'esdeveniment.
+     * @param idMesura identificador de la mesura.
+     * @return llista de MesuraEsdeveniment associats a aquest esdeveniment i mesura
+     */
+    Optional<MesuraEsdeveniment> findByIdEsdevenimentAndIdMesura(Integer idEsdeveniment, Integer idMesura);
+
 
     /**
      * Elimina totes les associacions per a una mesura específica.

@@ -269,8 +269,125 @@ class EsdevenimentsControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].nomUsuari").value("admin"))
-                .andExpect(jsonPath("$[1].id").value(3))
-                .andExpect(jsonPath("$[1].nomUsuari").value("jvidal"));
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[1].nomUsuari").value("convidat"));
     }
+
+    /**
+     * Prova del mètode afegirMesuraAEsdeveniment.
+     * Verifica que l'endpoint retorni un codi de resposta 200 i un missatge d'èxit si l'assignació té èxit.
+     *
+     * @throws Exception en cas d'error en la prova d'integració.
+     */
+    @Test
+    void afegirMesuraAEsdeveniment() throws Exception {
+        // Dades test
+        Integer idEsdeveniment = 3;
+        Integer idMesura = 1;
+        String nomUsuari = "admin";
+        String token = "mockedJwtToken";
+
+        // Simular que extraguem el nom d'usuari correctament
+        when(jwtUtil.extreureNomUsuari(token)).thenReturn(nomUsuari);
+
+        // Simular que el token és vàlid i actiu
+        when(jwtUtil.validarToken(token, nomUsuari)).thenReturn(true);
+        when(tokenManager.isTokenActive(token)).thenReturn(true);
+
+        // Simular el comportament del servei
+        when(esdevenimentsService.afegirMesuraAEsdeveniment(idEsdeveniment, idMesura)).thenReturn(true);
+
+        // Realitzar la petició POST simulada
+        mockMvc.perform(post("/api/esdeveniments/{id}/mesures/{idMesura}", idEsdeveniment, idMesura)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Mesura afegida correctament a l'esdeveniment."));
+    }
+
+    /**
+     * Prova del mètode afegirUsuariAEsdeveniment.
+     * Verifica que l'endpoint retorni un codi de resposta 200 i un missatge d'èxit si l'assignació té èxit.
+     *
+     * @throws Exception en cas d'error en la prova d'integració.
+     */
+    @Test
+    void afegirUsuariAEsdeveniment() throws Exception {
+        // Dades test
+        Integer idEsdeveniment = 1;
+        Long idUsuari = 2L;
+        String nomUsuari = "admin";
+        String token = "mockedJwtToken";
+
+        // Simular que extraguem el nom d'usuari correctament
+        when(jwtUtil.extreureNomUsuari(token)).thenReturn(nomUsuari);
+
+        // Simular que el token és vàlid i actiu
+        when(jwtUtil.validarToken(token, nomUsuari)).thenReturn(true);
+        when(tokenManager.isTokenActive(token)).thenReturn(true);
+
+        // Simular el comportament del servei
+        when(esdevenimentsService.afegirUsuariAEsdeveniment(idEsdeveniment, idUsuari)).thenReturn(true);
+
+        // Realitzar la petició POST simulada
+        mockMvc.perform(post("/api/esdeveniments/{id}/usuaris/{idUsuari}", idEsdeveniment, idUsuari)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Usuari afegit correctament a l'esdeveniment."));
+    }
+
+    /**
+     * Prova del mètode eliminarMesuraAssignada.
+     * Verifica que l'endpoint retorni un codi de resposta 200 i un missatge d'èxit si l'eliminació té èxit.
+     *
+     * @throws Exception en cas d'error en la prova d'integració.
+     */
+    @Test
+    void eliminarMesuraAssignada() throws Exception {
+        // Dades test
+        Integer idEsdeveniment = 1;
+        Integer idMesura = 1;
+        String nomUsuari = "admin";
+        String token = "mockedJwtToken";
+
+        // Simular que extraguem el nom d'usuari correctament
+        when(jwtUtil.extreureNomUsuari(token)).thenReturn(nomUsuari);
+
+        // Simular que el token és vàlid i actiu
+        when(jwtUtil.validarToken(token, nomUsuari)).thenReturn(true);
+        when(tokenManager.isTokenActive(token)).thenReturn(true);
+
+        // Simular el comportament del servei
+        when(esdevenimentsService.eliminarMesuraAssignadaEsdeveniment(idEsdeveniment, idMesura)).thenReturn(true);
+
+        // Realitzar la petició DELETE simulada
+        mockMvc.perform(delete("/api/esdeveniments/{id}/mesures/{idMesura}", idEsdeveniment, idMesura)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Mesura eliminada correctament de l'esdeveniment."));
+    }
+
+    @Test
+    void eliminarMesuraAssignada_mesuraNoTrobada() throws Exception {
+        Integer idEsdeveniment = 3;
+        Integer idMesura = 1;
+        String nomUsuari = "admin";
+        String token = "mockedJwtToken";
+
+        // Simular token vàlid
+        when(jwtUtil.extreureNomUsuari(token)).thenReturn(nomUsuari);
+        when(jwtUtil.validarToken(token, nomUsuari)).thenReturn(true);
+        when(tokenManager.isTokenActive(token)).thenReturn(true);
+
+        // Simular que la mesura no està assignada
+        when(esdevenimentsService.eliminarMesuraAssignadaEsdeveniment(idEsdeveniment, idMesura)).thenReturn(false);
+
+        mockMvc.perform(delete("/api/esdeveniments/{id}/mesures/{idMesura}", idEsdeveniment, idMesura)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("No s'ha trobat la mesura o no està assignada a l'esdeveniment."));
+    }
+
+
+
 
 }
