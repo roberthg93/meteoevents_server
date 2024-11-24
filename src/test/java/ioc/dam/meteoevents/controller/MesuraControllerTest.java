@@ -259,9 +259,9 @@ class MesuraControllerTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].nom").value("IV The Traka"))
-                .andExpect(jsonPath("$[0].organitzador").value("Klassmark"));
+                .andExpect(jsonPath("$[0].id").value(3))
+                .andExpect(jsonPath("$[0].nom").value("Campionat d'España de Surf 2025"))
+                .andExpect(jsonPath("$[0].organitzador").value("Federació Espanyola de Surf"));
     }
 
 }
