@@ -6,6 +6,7 @@ import ioc.dam.meteoevents.entity.Usuari;
 import ioc.dam.meteoevents.repository.EsdevenimentRepository;
 import ioc.dam.meteoevents.repository.EsdevenimentUsuariRepository;
 import ioc.dam.meteoevents.repository.UsuariRepository;
+import ioc.dam.meteoevents.util.CipherUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,21 +41,44 @@ public class UsuariService {
 
     /**
      * Autentica un usuari basat en el seu nom d'usuari i contrasenya.
+     * Aquest mètode busca l'usuari a la base de dades pel seu nom d'usuari i compara
+     * la contrasenya proporcionada amb la contrasenya xifrada que hi ha emmagatzemada.
      *
-     * Aquest mètode cerca un usuari a la base de dades pel seu nom d'usuari. Si es troba,
-     * compara la contrasenya proporcionada amb la contrasenya de l'usuari desat. Si coincideixen,
+     * Si la contrasenya proporcionada es desxifra i coincideix amb la contrasenya xifrada de l'usuari,
      * retorna l'entitat {@link Usuari}. En cas contrari, retorna {@code null}.
      *
      * @param nomUsuari el nom d'usuari utilitzat per a la identificació.
-     * @param contrasenya la contrasenya proporcionada per a l'autenticació.
+     * @param contrasenya la contrasenya proporcionada pel client.
      * @return l'entitat {@link Usuari} si l'autenticació és correcta; {@code null} si és incorrecta.
      * @author rhospital
      */
     public Usuari autenticar(String nomUsuari, String contrasenya) {
+        // Busquem l'usuari a la base de dades pel seu nom d'usuari
         Optional<Usuari> usuariOpt = usuariRepository.findByNomUsuari(nomUsuari);
-        if (usuariOpt.isPresent() && contrasenya.equals(usuariOpt.get().getContrasenya())) {
-            return usuariOpt.get();
+
+        // Si l'usuari existeix
+        if (usuariOpt.isPresent()) {
+            Usuari usuari = usuariOpt.get();
+            String contrasenyaEmmagatzemada = usuari.getContrasenya();
+
+            try {
+                // Si la contrasenya emmagatzemada està encriptada amb el prefix "ENC_"
+                if (contrasenyaEmmagatzemada.startsWith("ENC_")) {
+                    // Desxifrem la contrasenya emmagatzemada
+                    String contrasenyaDesxifrada = CipherUtil.decrypt(contrasenyaEmmagatzemada);
+
+                    // Comparació de la contrasenya proporcionada amb la desxifrada
+                    if (contrasenya.equals(contrasenyaDesxifrada)) {
+                        return usuari; // Autenticació correcta
+                    }
+                }
+            } catch (Exception e) {
+                // Si alguna cosa va malament en el procés de desxifratge, es retorna null
+                e.printStackTrace();
+            }
         }
+
+        // Si no es troba l'usuari o la contrasenya no coincideix, retornem null
         return null;
     }
 
