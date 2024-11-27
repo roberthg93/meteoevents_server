@@ -67,7 +67,7 @@ public class PwdEncMigracioService {
      */
     public String encryptPassword(String plainPassword) throws Exception {
         String encrypted = CipherUtil.encrypt(plainPassword);
-        return ENCRYPTED_PREFIX + encrypted;
+        return encrypted;
     }
 
     /**

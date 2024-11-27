@@ -30,6 +30,8 @@ C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\service\CustomUserDe
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\service\EsdevenimentsService.java
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\service\JwtService.java
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\service\MesuraService.java
+C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\service\PwdEncMigracioService.java
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\service\UsuariService.java
+C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\util\CipherUtil.java
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\util\JwtUtil.java
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\util\TokenManager.java

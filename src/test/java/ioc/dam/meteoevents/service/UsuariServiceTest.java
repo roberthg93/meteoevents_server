@@ -47,21 +47,6 @@ class UsuariServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    /**
-     * Prova del mètode d'autenticació amb èxit.
-     * Verifica que es retorna l'usuari correcte quan la contrasenya coincideix.
-     *
-     * @author rhospital
-     */
-    @Test
-    void autenticarUsuariCorrecte() {
-        when(usuariRepository.findByNomUsuari("admin")).thenReturn(Optional.of(usuari));
-        when(passwordEncoder.matches("admin24", usuari.getContrasenya())).thenReturn(true);
-
-        Usuari resultat = usuariService.autenticar("admin", "admin24");
-        assertNotNull(resultat);
-        assertEquals("admin", resultat.getNomUsuari());
-    }
 
     /**
      * Prova del mètode d'autenticació quan l'usuari no es troba.

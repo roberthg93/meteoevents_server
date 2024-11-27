@@ -51,7 +51,15 @@ public class CipherUtil {
         }
 
         String base64Data = encryptedData.substring(ENCRYPTION_PREFIX.length()); // Elimina el prefix
+        if (!base64Data.matches("^[A-Za-z0-9+/=]*$")) {
+            throw new IllegalArgumentException("Les dades contenen caràcters no vàlids per Base64.");
+        }
+
         SecretKey secretKey = new SecretKeySpec(SECRET_KEY, ALGORITHM);
+        if (SECRET_KEY.length != 16) {
+            throw new IllegalArgumentException("La clau secreta ha de tenir 16 bytes.");
+        }
+
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, secretKey); // Inicialitzar el Cipher en mode DECRYPT
         byte[] decodedData = Base64.getDecoder().decode(base64Data); // Decodificar de Base64

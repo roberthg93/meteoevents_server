@@ -1,3 +1,4 @@
+ioc\dam\meteoevents\util\CipherUtil.class
 ioc\dam\meteoevents\dto\EsdevenimentUsuariDTO.class
 ioc\dam\meteoevents\mapper\EsdevenimentMapper.class
 ioc\dam\meteoevents\repository\MesuraEsdevenimentRepository.class
@@ -17,6 +18,7 @@ ioc\dam\meteoevents\mapper\EsdevenimentUsuariMapper.class
 ioc\dam\meteoevents\MeteoeventsApplication.class
 ioc\dam\meteoevents\dto\MesuraDTO.class
 ioc\dam\meteoevents\controller\EsdevenimentsController.class
+ioc\dam\meteoevents\service\PwdEncMigracioService.class
 ioc\dam\meteoevents\entity\MesuraEsdevenimentId.class
 ioc\dam\meteoevents\entity\EsdevenimentUsuariId.class
 ioc\dam\meteoevents\repository\MesuraRepository.class
