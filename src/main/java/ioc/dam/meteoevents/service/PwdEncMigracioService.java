@@ -35,7 +35,7 @@ public class PwdEncMigracioService {
         for (Usuari usuari : usuaris) {
             String contrasenya = usuari.getContrasenya();
             try {
-                // Comprovem si la contrasenya ja està xifrada (exemple: detectem Base64)
+                // Comprovem si la contrasenya ja està xifrada (comprovem si té el prefix)
                 if (!isEncrypted(contrasenya)) {
                     // Xifrem la contrasenya i la desem
                     String encryptedPassword = encryptPassword(contrasenya);

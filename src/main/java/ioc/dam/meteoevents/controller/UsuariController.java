@@ -1,16 +1,19 @@
 package ioc.dam.meteoevents.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ioc.dam.meteoevents.entity.Esdeveniment;
 import ioc.dam.meteoevents.entity.Usuari;
 import ioc.dam.meteoevents.service.UsuariService;
 import ioc.dam.meteoevents.util.JwtUtil;
 import ioc.dam.meteoevents.util.TokenManager;
+import ioc.dam.meteoevents.util.CipherUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controlador REST per a la gestió dels usuaris, incloent operacions d'inici de sessió i tancament de sessió.
@@ -33,6 +36,36 @@ public class UsuariController {
     private TokenManager tokenManager;
 
 
+
+    /*@PostMapping("/login")
+    public ResponseEntity<String> loginUsuari(@RequestBody String encryptedRequest) {
+        try {
+            // Desxifra la petició
+            String decryptedRequest = cipherUtil.decrypt(encryptedRequest);
+            String[] parts = decryptedRequest.split(":");
+            String nomUsuari = parts[0];
+            String contrasenya = parts[1];
+
+            Usuari usuari = usuariService.autenticar(nomUsuari, contrasenya);
+
+            if (usuari != null) {
+                String token = jwtUtil.generarToken(nomUsuari);
+
+                // Preparem la resposta en format JSON
+                String responseJson = String.format("{\"token\": \"%s\", \"funcional_id\": \"%s\", \"id\": \"%d\"}",
+                        token, usuari.getFuncional_id(), usuari.getId());
+
+                // Xifrem la resposta
+                String encryptedResponse = cipherUtil.encrypt(responseJson);
+                return ResponseEntity.ok(encryptedResponse);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Tornarà un error 401 sense cos
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error en processar la sol·licitud.");
+        }
+    }*/
+
     /**
      * Endpoint per a l'inici de sessió d'un usuari.
      * Aquest mètode rep el nom d'usuari i la contrasenya, valida les credencials i retorna un token JWT si l'autenticació és correcta.
@@ -43,12 +76,29 @@ public class UsuariController {
      * @author rhospital
      */
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> loginUsuari(@RequestParam String nomUsuari, @RequestParam String contrasenya) {
+    public ResponseEntity<String> loginUsuari(@RequestParam String nomUsuari, @RequestParam String contrasenya) {
         Usuari usuari = usuariService.autenticar(nomUsuari, contrasenya);
 
         if (usuari != null) {
             String token = jwtUtil.generarToken(nomUsuari);
-            return ResponseEntity.ok(new JwtResponse(token, usuari.getFuncional_id(), usuari.getId()));
+            JwtResponse jwtResponse = new JwtResponse(token, usuari.getFuncional_id(), usuari.getId());
+
+            try {
+                // Serialitzar l'objecte JwtResponse a JSON
+                ObjectMapper objectMapper = new ObjectMapper();
+                String jsonResponse = objectMapper.writeValueAsString(jwtResponse);
+
+                // Print intern per saber el valor del token encriptat i utilitzar-lo per fer proves
+                System.out.println(CipherUtil.encrypt(token));
+                System.out.println(token);
+
+                // Xifrar la resposta JSON
+                String encryptedResponse = CipherUtil.encrypt(jsonResponse);
+
+                return ResponseEntity.ok(encryptedResponse);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al xifrar la resposta");
+            }
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Tornarà un error 401 sense cos
         }
@@ -91,20 +141,43 @@ public class UsuariController {
      * @author rhospital
      */
     @GetMapping
-    public ResponseEntity<List<Usuari>> llistarUsuaris(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<String> llistarUsuaris(@RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7); // Token encriptat
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                List<Usuari> usuaris = usuariService.llistarUsuaris();
-                return ResponseEntity.ok(usuaris);
+            try {
+                // Desxifrem el token amb CipherUtil
+                String token = CipherUtil.decrypt(encryptedToken);
+
+                // Extreiem el nom d'usuari del token desxifrat
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // Validem el token i comprovem si és actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // Obtenim la llista d'usuaris
+                    List<Usuari> usuaris = usuariService.llistarUsuaris();
+
+                    // Convertim la llista d'usuaris a JSON
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonData = objectMapper.writeValueAsString(usuaris);
+
+                    // Xifrem el JSON amb AES per enviar-lo al client
+                    String encryptedData = CipherUtil.encrypt(jsonData);
+
+                    return ResponseEntity.ok(encryptedData);
+                } else {
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu");
+                }
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El token no està correctament format");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desxifrar o processar el token");
             }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); //token invàlid o inactiu
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); //token no proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat");
     }
+
 
     /**
      * Endpoint per obtenir un usuari específic per identificador.
@@ -115,20 +188,39 @@ public class UsuariController {
      * @author rhospital
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Usuari> obtenirUsuariPerId(@PathVariable Long id, @RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<String> obtenirUsuariPerId(@PathVariable Long id, @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                return usuariService.obtenirUsuariPerId(id)
-                        .map(ResponseEntity::ok)
-                        .orElse(ResponseEntity.notFound().build());
-                //.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+            try {
+                // Desxifrem el token
+                String token = CipherUtil.decrypt(encryptedToken);
+
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    ResponseEntity<Usuari> usuari = usuariService.obtenirUsuariPerId(id)
+                            .map(ResponseEntity::ok)
+                            .orElse(ResponseEntity.notFound().build());
+                    //.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+
+                    // Convertim la llista d'usuaris a JSON
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonData = objectMapper.writeValueAsString(usuari);
+
+                    // Xifrem el JSON amb AES per enviar-lo al client
+                    String encryptedData = CipherUtil.encrypt(jsonData);
+
+                    return ResponseEntity.ok(encryptedData);
+                } else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
+                }
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El token no està correctament format");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desxifrar o processar el token");
             }
-            //token invàlid o inactiu
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
         //token no proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -137,25 +229,38 @@ public class UsuariController {
     /**
      * Endpoint per afegir un nou usuari.
      *
-     * @param usuari l'objecte {@link Usuari} amb les dades del nou usuari.
+     * @param encryptedUsuari l'objecte {@link Usuari} encriptat i en forma de String amb les dades del nou usuari.
      * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
      * @return un {@link ResponseEntity} amb el nou usuari creat i l'estat HTTP 201 si s'ha creat correctament,
      * o un estat HTTP 401 si el token és invàlid.
      * @author rhospital
      */
     @PostMapping
-    public ResponseEntity<Usuari> afegirUsuari(@RequestBody Usuari usuari, @RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<Usuari> afegirUsuari(@RequestBody String encryptedUsuari, @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                Usuari nouUsuari = usuariService.afegirUsuari(usuari);
-                return ResponseEntity.status(HttpStatus.CREATED).body(nouUsuari);
-            } else {
-                // Token invàlid o inactiu
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            try {
+                // Desencriptar el token
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // Desencriptem usuari enviat en el cos de la petició
+                    String usuariJSON = CipherUtil.decrypt(encryptedUsuari);
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Usuari usuari = objectMapper.readValue(usuariJSON, Usuari.class);
+                    // Afegim l'usuari
+                    Usuari nouUsuari = usuariService.afegirUsuari(usuari);
+
+                    return ResponseEntity.status(HttpStatus.CREATED).body(nouUsuari);
+                } else {
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
         }
         // Cap token proporcionat

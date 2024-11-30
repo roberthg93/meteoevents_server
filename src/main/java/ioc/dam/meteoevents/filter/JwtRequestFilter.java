@@ -4,6 +4,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import ioc.dam.meteoevents.entity.Usuari;
 import ioc.dam.meteoevents.service.CustomUserDetailsService;
 import ioc.dam.meteoevents.service.JwtService;
+import ioc.dam.meteoevents.util.CipherUtil;
 import ioc.dam.meteoevents.util.TokenManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -79,9 +80,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String nomUsuari = null;
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
+            String encryptedJwt = authorizationHeader.substring(7);
 
             try {
+                // Desxifrem token
+                jwt = CipherUtil.decrypt(encryptedJwt);
+                System.out.println("Token filter desencriptat: " + jwt);
+
                 // Obtenim l'usuari a partir del token
                 Optional<Usuari> usuariOptional = jwtService.getUserFromToken(jwt);
                 if (usuariOptional.isPresent()) {
