@@ -115,20 +115,27 @@ public class UsuariController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
-            tokenManager.isTokenActive(token);
+            try {
+                // Desxifrem el token amb CipherUtil
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                // Eliminar el token de la memòria
-                tokenManager.removeToken(token);
                 tokenManager.isTokenActive(token);
-                return ResponseEntity.ok("Logout amb èxit");
-            }
 
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu");
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // Eliminar el token de la memòria
+                    tokenManager.removeToken(token);
+                    tokenManager.isTokenActive(token);
+                    return ResponseEntity.ok("Logout amb èxit");
+                } else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu");
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desxifrar o processar el token");
+            }
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("token no proporcionat");
     }
@@ -271,7 +278,7 @@ public class UsuariController {
      * Endpoint per modificar les dades d'un usuari existent.
      *
      * @param id l'identificador únic de l'usuari que es vol modificar.
-     * @param usuariDetalls l'objecte {@link Usuari} amb les noves dades de l'usuari.
+     * @param encryptedUsuari l'objecte {@link Usuari} amb les noves dades de l'usuari.
      * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
      * @return un {@link ResponseEntity} amb l'usuari actualitzat.
      * @author rhospital
@@ -279,25 +286,41 @@ public class UsuariController {
     @PutMapping("/{id}")
     public ResponseEntity<String> modificarUsuari(
             @PathVariable Long id,
-            @RequestBody Usuari usuariDetalls,
+            @RequestBody String encryptedUsuari,
             @RequestHeader("Authorization") String authorizationHeader) {
 
         // Comprova que el token JWT està present i és vàlid
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                Usuari usuariModificat = usuariService.modificarUsuari(id, usuariDetalls);
-                if (usuariModificat != null) {
-                    return ResponseEntity.ok("Usuari actualitzat correctament.");
+            try {
+                // Desencriptar el token
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // Desencriptem usuari enviat en el cos de la petició
+                    String usuariJSON = CipherUtil.decrypt(encryptedUsuari);
+
+                    // Passem el JSON desencriptat a un objecte Usuari
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Usuari usuari = objectMapper.readValue(usuariJSON, Usuari.class);
+
+                    // Modifiquem l'usuari
+                    Usuari usuariModificat = usuariService.modificarUsuari(id, usuari);
+                    if (usuariModificat != null) {
+                        return ResponseEntity.ok("Usuari actualitzat correctament.");
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuari no trobat.");
+                    }
                 } else {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuari no trobat.");
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
                 }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
-            // Token invàlid o inactiu
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
@@ -315,21 +338,29 @@ public class UsuariController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarUsuariPerId(@PathVariable Long id, @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar que el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                boolean eliminat = usuariService.eliminarUsuari(id);
+            try {
+                // Desencriptar el token
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
 
-                if (eliminat) {
-                    return ResponseEntity.ok("Usuari eliminat amb èxit.");
+                // validar que el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    boolean eliminat = usuariService.eliminarUsuari(id);
+
+                    if (eliminat) {
+                        return ResponseEntity.ok("Usuari eliminat amb èxit.");
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuari no trobat.");
+                    }
                 } else {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuari no trobat.");
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
                 }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
-            // Token invàlid o inactiu
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
@@ -344,20 +375,35 @@ public class UsuariController {
      * @author rhospital
      */
     @GetMapping("/{id}/esdeveniments")
-    public ResponseEntity<List<Esdeveniment>> obtenirEsdevenimentsPerUsuari(@PathVariable("id") Long idUsuari,
+    public ResponseEntity<String> obtenirEsdevenimentsPerUsuari(@PathVariable("id") Long idUsuari,
                                                                              @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                // mètode per obtenir llista d'esdeveniments
-                List<Esdeveniment> esdeveniments = usuariService.obtenirEsdevenimentsPerUsuari(idUsuari);
-                return ResponseEntity.ok(esdeveniments);
-            } else {
-                // Token invàlid o inactiu
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            try {
+                // Desencriptar el token
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // mètode per obtenir llista d'esdeveniments
+                    List<Esdeveniment> esdeveniments = usuariService.obtenirEsdevenimentsPerUsuari(idUsuari);
+
+                    // Convertim la llista d'esdeveniments a JSON
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonData = objectMapper.writeValueAsString(esdeveniments);
+
+                    // Xifrem el JSON amb AES per enviar-lo al client
+                    String encryptedData = CipherUtil.encrypt(jsonData);
+
+                    return ResponseEntity.ok(encryptedData);
+                } else {
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
         }
         // Cap token proporcionat
