@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Base64;
 
 /**
  * Controlador REST per a la gestió dels usuaris, incloent operacions d'inici de sessió i tancament de sessió.
@@ -77,13 +77,20 @@ public class UsuariController {
      */
     @PostMapping("/login")
     public ResponseEntity<String> loginUsuari(@RequestParam String nomUsuari, @RequestParam String contrasenya) {
-        Usuari usuari = usuariService.autenticar(nomUsuari, contrasenya);
+        try {
+            // Descodificar la contrasenya amb Base64
+            byte[] contrasenyaBytes = Base64.getDecoder().decode(contrasenya);
+            String encryptedContrasenyaCipher = new String(contrasenyaBytes);
 
-        if (usuari != null) {
-            String token = jwtUtil.generarToken(nomUsuari);
-            JwtResponse jwtResponse = new JwtResponse(token, usuari.getFuncional_id(), usuari.getId());
+            // Descodificar contrasenya encriptada amb Cipher
+            String contrasenyaTextPla = CipherUtil.decrypt(encryptedContrasenyaCipher);
 
-            try {
+            Usuari usuari = usuariService.autenticar(nomUsuari, contrasenyaTextPla);
+
+            if (usuari != null) {
+                String token = jwtUtil.generarToken(nomUsuari);
+                JwtResponse jwtResponse = new JwtResponse(token, usuari.getFuncional_id(), usuari.getId());
+
                 // Serialitzar l'objecte JwtResponse a JSON
                 ObjectMapper objectMapper = new ObjectMapper();
                 String jsonResponse = objectMapper.writeValueAsString(jwtResponse);
@@ -96,11 +103,13 @@ public class UsuariController {
                 String encryptedResponse = CipherUtil.encrypt(jsonResponse);
 
                 return ResponseEntity.ok(encryptedResponse);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al xifrar la resposta");
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Tornarà un error 401 sense cos
             }
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Tornarà un error 401 sense cos
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error en la descodificació de la contrasenya");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al xifrar la resposta");
         }
     }
 

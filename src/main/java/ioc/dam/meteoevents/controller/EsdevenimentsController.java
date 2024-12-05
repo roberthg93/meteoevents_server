@@ -266,24 +266,39 @@ public class EsdevenimentsController {
      * @author rhospital
      */
     @GetMapping("/{id}/usuaris")
-    public ResponseEntity<List<Usuari>> obtenirUsuarisPerEsdeveniment(@PathVariable("id") Integer idEsdeveniment,
+    public ResponseEntity<String> obtenirUsuarisPerEsdeveniment(@PathVariable("id") Integer idEsdeveniment,
                                                                       @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                // mètode per obtenir llista usuaris
-                List<Usuari> usuaris = esdevenimentsService.obtenirUsuarisPerEsdeveniment(idEsdeveniment);
-                return ResponseEntity.ok(usuaris);
-            } else {
-                // Token invàlid o inactiu
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            try {
+                // Desxifrem el token amb CipherUtil
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // mètode per obtenir llista usuaris
+                    List<Usuari> usuaris = esdevenimentsService.obtenirUsuarisPerEsdeveniment(idEsdeveniment);
+
+                    // Convertim la llista d'usuaris a JSON
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonData = objectMapper.writeValueAsString(usuaris);
+
+                    // Xifrem el JSON amb AES per enviar-lo al client
+                    String encryptedData = CipherUtil.encrypt(jsonData);
+
+                    return ResponseEntity.ok(encryptedData);
+                } else {
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu");
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desxifrar o processar el token");
             }
         }
         // Cap token proporcionat
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat");
     }
 
     /**
@@ -295,24 +310,40 @@ public class EsdevenimentsController {
      * @author rhospital
      */
     @GetMapping("/{id}/mesures")
-    public ResponseEntity<List<Mesura>> obtenirMesuresPerEsdeveniment(@PathVariable("id") Integer idEsdeveniment,
+    public ResponseEntity<String> obtenirMesuresPerEsdeveniment(@PathVariable("id") Integer idEsdeveniment,
                                                                       @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                // mètode per obtenir llista mesures
-                List<Mesura> mesures = esdevenimentsService.obtenirMesuresPerEsdeveniment(idEsdeveniment);
-                return ResponseEntity.ok(mesures);
-            } else {
-                // Token invàlid o inactiu
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            try {
+                // Desxifrem el token amb CipherUtil
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // mètode per obtenir llista mesures
+                    List<Mesura> mesures = esdevenimentsService.obtenirMesuresPerEsdeveniment(idEsdeveniment);
+
+                    // Convertim la llista d'usuaris a JSON
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonData = objectMapper.writeValueAsString(mesures);
+
+                    // Xifrem el JSON amb AES per enviar-lo al client
+                    String encryptedData = CipherUtil.encrypt(jsonData);
+
+                    return ResponseEntity.ok(encryptedData);
+                } else {
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu");
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desxifrar o processar el token");
             }
+
         }
         // Cap token proporcionat
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat");
     }
 
     /**
@@ -331,21 +362,29 @@ public class EsdevenimentsController {
             @RequestHeader("Authorization") String authorizationHeader) {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // Validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                boolean afegitCorrectament = esdevenimentsService.afegirUsuariAEsdeveniment(idEsdeveniment, idUsuari);
+            try {
+                // Desxifrem el token amb CipherUtil
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
 
-                if (afegitCorrectament) {
-                    return ResponseEntity.ok("Usuari afegit correctament a l'esdeveniment.");
+                // Validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    boolean afegitCorrectament = esdevenimentsService.afegirUsuariAEsdeveniment(idEsdeveniment, idUsuari);
+
+                    if (afegitCorrectament) {
+                        return ResponseEntity.ok("Usuari afegit correctament a l'esdeveniment.");
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Esdeveniment o Usuari no trobats.");
+                    }
                 } else {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Esdeveniment o Usuari no trobats.");
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
                 }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desxifrar o processar el token");
             }
-            // Token invàlid o inactiu
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
@@ -367,21 +406,29 @@ public class EsdevenimentsController {
             @RequestHeader("Authorization") String authorizationHeader) {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // Validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                boolean afegitCorrectament = esdevenimentsService.afegirMesuraAEsdeveniment(idEsdeveniment, idMesura);
+            try {
+                // Desxifrem el token amb CipherUtil
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
 
-                if (afegitCorrectament) {
-                    return ResponseEntity.ok("Mesura afegida correctament a l'esdeveniment.");
+                // Validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    boolean afegitCorrectament = esdevenimentsService.afegirMesuraAEsdeveniment(idEsdeveniment, idMesura);
+
+                    if (afegitCorrectament) {
+                        return ResponseEntity.ok("Mesura afegida correctament a l'esdeveniment.");
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Esdeveniment o Mesura no trobats.");
+                    }
                 } else {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Esdeveniment o Mesura no trobats.");
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
                 }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desxifrar o processar el token");
             }
-            // Token invàlid o inactiu
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
@@ -403,23 +450,32 @@ public class EsdevenimentsController {
             @RequestHeader("Authorization") String authorizationHeader) {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // Validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                // Crida al servei per eliminar l'usuari assignat a l'esdeveniment
-                boolean eliminada = esdevenimentsService.eliminarUsuariAssignatEsdeveniment(idEsdeveniment, idUsuari);
+            try {
+                // Desxifrem el token amb CipherUtil
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
 
-                if (eliminada) {
-                    return ResponseEntity.ok("Usuari eliminat correctament de l'esdeveniment.");
+                // Validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // Crida al servei per eliminar l'usuari assignat a l'esdeveniment
+                    boolean eliminada = esdevenimentsService.eliminarUsuariAssignatEsdeveniment(idEsdeveniment, idUsuari);
+
+                    if (eliminada) {
+                        return ResponseEntity.ok("Usuari eliminat correctament de l'esdeveniment.");
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body("No s'ha trobat l'usuari o no està assignat a l'esdeveniment.");
+                    }
                 } else {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body("No s'ha trobat l'usuari o no està assignat a l'esdeveniment.");
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
                 }
+
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desxifrar o processar el token");
             }
-            // Token invàlid o inactiu
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
@@ -441,23 +497,31 @@ public class EsdevenimentsController {
             @RequestHeader("Authorization") String authorizationHeader) {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // Validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                // Crida al servei per eliminar la mesura assignada a l'esdeveniment
-                boolean eliminada = esdevenimentsService.eliminarMesuraAssignadaEsdeveniment(idEsdeveniment, idMesura);
+            try {
+                // Desxifrem el token amb CipherUtil
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
 
-                if (eliminada) {
-                    return ResponseEntity.ok("Mesura eliminada correctament de l'esdeveniment.");
+                // Validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // Crida al servei per eliminar la mesura assignada a l'esdeveniment
+                    boolean eliminada = esdevenimentsService.eliminarMesuraAssignadaEsdeveniment(idEsdeveniment, idMesura);
+
+                    if (eliminada) {
+                        return ResponseEntity.ok("Mesura eliminada correctament de l'esdeveniment.");
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body("No s'ha trobat la mesura o no està assignada a l'esdeveniment.");
+                    }
                 } else {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body("No s'ha trobat la mesura o no està assignada a l'esdeveniment.");
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
                 }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desxifrar o processar el token");
             }
-            // Token invàlid o inactiu
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");

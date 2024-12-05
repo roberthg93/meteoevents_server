@@ -1,8 +1,10 @@
 package ioc.dam.meteoevents.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ioc.dam.meteoevents.entity.Esdeveniment;
 import ioc.dam.meteoevents.entity.Mesura;
 import ioc.dam.meteoevents.service.MesuraService;
+import ioc.dam.meteoevents.util.CipherUtil;
 import ioc.dam.meteoevents.util.JwtUtil;
 import ioc.dam.meteoevents.util.TokenManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,17 +42,33 @@ public class MesuraController {
      * @author rhospital
      */
     @GetMapping
-    public ResponseEntity<List<Mesura>> llistarMesures(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<String> llistarMesures(@RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                List<Mesura> mesuras = mesuraService.llistarMesures();
-                return ResponseEntity.ok(mesuras);
+            try {
+                // Desxifrem el token amb CipherUtil
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    List<Mesura> mesures = mesuraService.llistarMesures();
+
+                    // Convertim la llista de mesures a JSON
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonData = objectMapper.writeValueAsString(mesures);
+
+                    // Xifrem el JSON amb AES per enviar-lo al client
+                    String encryptedData = CipherUtil.encrypt(jsonData);
+
+                    return ResponseEntity.ok(encryptedData);
+                } else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); //token invàlid o inactiu
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); //token invàlid o inactiu
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); //token no proporcionat
     }
@@ -64,19 +82,36 @@ public class MesuraController {
      * @author rhospital
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Mesura> obtenirMesuraPerId(@PathVariable Integer id, @RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<String> obtenirMesuraPerId(@PathVariable Integer id, @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                return mesuraService.obtenirMesuraPerId(id)
-                        .map(ResponseEntity::ok)
-                        .orElse(ResponseEntity.notFound().build());
+            try {
+                // Desxifrem el token
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    ResponseEntity<Mesura> mesura = mesuraService.obtenirMesuraPerId(id)
+                            .map(ResponseEntity::ok)
+                            .orElse(ResponseEntity.notFound().build());
+
+                    // convertim la llista d'esdeveniments a JSON
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonData = objectMapper.writeValueAsString(mesura);
+
+                    // Xifrem el JSON amb AES per enviar-lo al client
+                    String encryptedData = CipherUtil.encrypt(jsonData);
+
+                    return ResponseEntity.ok(encryptedData);
+                } else {
+                    //token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al desxifrar o processar el token");
             }
-            //token invàlid o inactiu
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
         //token no proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -85,25 +120,40 @@ public class MesuraController {
     /**
      * Endpoint per afegir una nova mesura.
      *
-     * @param mesura l'objecte {@link Mesura} amb les dades de la nova mesura.
+     * @param encryptedMesura l'objecte {@link Mesura} amb les dades de la nova mesura.
      * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
      * @return un {@link ResponseEntity} amb la nova mesura creada i l'estat HTTP 201 si s'ha creat correctament,
      * o un estat HTTP 401 si el token és invàlid.
      * @author rhospital
      */
     @PostMapping
-    public ResponseEntity<Mesura> afegirMesura(@RequestBody Mesura mesura, @RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<Mesura> afegirMesura(@RequestBody String encryptedMesura, @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                Mesura novaMesura = mesuraService.afegirMesura(mesura);
-                return ResponseEntity.status(HttpStatus.CREATED).body(novaMesura);
-            } else {
-                // Token invàlid o inactiu
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            try {
+                // Desencriptar el token
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // Desencriptem mesura enviada en el cos de la petició
+                    String mesuraJSON = CipherUtil.decrypt(encryptedMesura);
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Mesura mesura = objectMapper.readValue(mesuraJSON, Mesura.class);
+
+                    // Afegim la mesura
+                    Mesura novaMesura = mesuraService.afegirMesura(mesura);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(novaMesura);
+                } else {
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                }
+
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
         }
         // Cap token proporcionat
@@ -114,7 +164,7 @@ public class MesuraController {
      * Endpoint per modificar les dades d'una mesura existent.
      *
      * @param id l'identificador únic de la mesura que es vol modificar.
-     * @param mesuraDetalls l'objecte {@link Mesura} amb les noves dades de la mesura.
+     * @param encryptedMesura l'objecte {@link Mesura} amb les noves dades de la mesura.
      * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
      * @return un {@link ResponseEntity} amb la mesura actualitzada.
      * @author rhospital
@@ -122,25 +172,41 @@ public class MesuraController {
     @PutMapping("/{id}")
     public ResponseEntity<String> modificarMesura(
             @PathVariable Integer id,
-            @RequestBody Mesura mesuraDetalls,
+            @RequestBody String encryptedMesura,
             @RequestHeader("Authorization") String authorizationHeader) {
 
         // Comprova que el token JWT està present i és vàlid
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                Mesura mesuraModificada = mesuraService.modificarMesura(id, mesuraDetalls);
-                if (mesuraModificada != null) {
-                    return ResponseEntity.ok("Mesura actualitzada correctament.");
+            try {
+                // Desencriptar el token
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // Desencriptem mesura enviada en el cos de la petició
+                    String mesuraJSON = CipherUtil.decrypt(encryptedMesura);
+
+                    // Passem el JSON desencriptat a un objecte Usuari
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Mesura mesuraDetalls = objectMapper.readValue(mesuraJSON, Mesura.class);
+
+                    // Modifiquem l'usuari
+                    Mesura mesuraModificada = mesuraService.modificarMesura(id, mesuraDetalls);
+                    if (mesuraModificada != null) {
+                        return ResponseEntity.ok("Mesura actualitzada correctament.");
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Mesura no trobada.");
+                    }
                 } else {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Mesura no trobada.");
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
                 }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
-            // Token invàlid o inactiu
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
@@ -157,21 +223,29 @@ public class MesuraController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarMesuraPerId(@PathVariable Integer id, @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar que el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                boolean eliminat = mesuraService.eliminarMesura(id);
+            try {
+                // Desencriptar el token
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
 
-                if (eliminat) {
-                    return ResponseEntity.ok("Mesura eliminada amb èxit.");
+                // validar que el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    boolean eliminat = mesuraService.eliminarMesura(id);
+
+                    if (eliminat) {
+                        return ResponseEntity.ok("Mesura eliminada amb èxit.");
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Mesura no trobada.");
+                    }
                 } else {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Mesura no trobada.");
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
                 }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
-            // Token invàlid o inactiu
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu.");
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
@@ -186,20 +260,35 @@ public class MesuraController {
      * @author rhospital
      */
     @GetMapping("/{id}/esdeveniments")
-    public ResponseEntity<List<Esdeveniment>> obtenirEsdevenimentsPerMesura(@PathVariable("id") Integer idMesura,
+    public ResponseEntity<String> obtenirEsdevenimentsPerMesura(@PathVariable("id") Integer idMesura,
                                                                             @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+            String encryptedToken = authorizationHeader.substring(7);
 
-            // validar el token sigui correcte i actiu
-            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                // mètode per obtenir llista d'esdeveniments
-                List<Esdeveniment> esdeveniments = mesuraService.obtenirEsdevenimentsPerMesura(idMesura);;
-                return ResponseEntity.ok(esdeveniments);
-            } else {
-                // Token invàlid o inactiu
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            try {
+                // Desencriptar el token
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // mètode per obtenir llista d'esdeveniments
+                    List<Esdeveniment> esdeveniments = mesuraService.obtenirEsdevenimentsPerMesura(idMesura);
+
+                    // Convertim la llista d'esdeveniments a JSON
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonData = objectMapper.writeValueAsString(esdeveniments);
+
+                    // Xifrem el JSON amb AES per enviar-lo al client
+                    String encryptedData = CipherUtil.encrypt(jsonData);
+
+                    return ResponseEntity.ok(encryptedData);
+                } else {
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
         }
         // Cap token proporcionat
