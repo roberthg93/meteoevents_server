@@ -82,7 +82,9 @@ public class EsdevenimentsService {
             esdeveniment.setCodiPostal(esdevenimentDetalls.getCodiPostal());
             esdeveniment.setPoblacio(esdevenimentDetalls.getPoblacio());
             esdeveniment.setAforament(esdevenimentDetalls.getAforament());
-            esdeveniment.setHorari(esdevenimentDetalls.getHorari());
+            esdeveniment.setHoraInici(esdevenimentDetalls.getHoraInici());
+            esdeveniment.setHoraFi(esdevenimentDetalls.getHoraFi());
+            esdeveniment.setDataEsde(esdevenimentDetalls.getDataEsde());
             return esdevenimentRepository.save(esdeveniment);
         }).orElseGet(() -> {
             esdevenimentDetalls.setId(id);

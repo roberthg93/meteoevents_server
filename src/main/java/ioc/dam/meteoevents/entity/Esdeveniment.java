@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 /**
  * Classe que representa un esdeveniment en el sistema.
  *
@@ -74,8 +77,20 @@ public class Esdeveniment {
     private String aforament;
 
     /**
-     * Horari de l'esdeveniment.
+     * Horari inici de l'esdeveniment.
      */
-    @Column
-    private String horari;
+    @Column(name = "hora_inici")
+    private String horaInici;
+
+    /**
+     * Horari fi de l'esdeveniment.
+     */
+    @Column(name = "hora_fi")
+    private String horaFi;
+
+    /**
+     * Data de l'esdeveniment.
+     */
+    @Column(name = "data_esde")
+    private String dataEsde;
 }

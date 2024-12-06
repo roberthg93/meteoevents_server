@@ -426,10 +426,14 @@ public class UsuariController {
      * @prompt "Implementar que l'ususari, al fer login, no només obtingui el token sinó també el perfil d'usuari. Implementar-ho a la classe UsuariController"
      * @author rhospital
      */
-    public class JwtResponse {
+    public static class JwtResponse {
         private String token;
         private String funcionalId; // Nou camp per funcional_id
         private Long usuariId;
+
+        // Constructor per defecte
+        public JwtResponse() {
+        }
 
         /**
          * Constructor per inicialitzar el token i el funcionalId.
@@ -440,7 +444,7 @@ public class UsuariController {
          */
         public JwtResponse(String token, String funcionalId, Long usuariId) {
             this.token = token;
-            this.funcionalId = funcionalId; // Inicializa el nuevo campo
+            this.funcionalId = funcionalId;
             this.usuariId = usuariId;
         }
 

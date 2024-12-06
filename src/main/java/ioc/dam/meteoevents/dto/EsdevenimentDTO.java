@@ -3,6 +3,9 @@ package ioc.dam.meteoevents.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 /**
  * Classe DTO per a l'entitat Esdeveniment.
  *
@@ -59,7 +62,17 @@ public class EsdevenimentDTO {
     private String aforament;
 
     /**
-     * Horari de l'esdeveniment.
+     * Horari inici de l'esdeveniment.
      */
-    private String horari;
+    private String horaInici;
+
+    /**
+     * Horari fi de l'esdeveniment.
+     */
+    private String horaFi;
+
+    /**
+     * Data de l'esdeveniment.
+     */
+    private String dataEsde;
 }

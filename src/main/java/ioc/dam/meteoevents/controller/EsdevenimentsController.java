@@ -1,6 +1,7 @@
 package ioc.dam.meteoevents.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ioc.dam.meteoevents.aemet.AemetService;
 import ioc.dam.meteoevents.entity.Esdeveniment;
 import ioc.dam.meteoevents.entity.Mesura;
 import ioc.dam.meteoevents.entity.Usuari;
@@ -33,6 +34,9 @@ public class EsdevenimentsController {
 
     @Autowired
     private TokenManager tokenManager;
+
+    @Autowired
+    private AemetService aemetService;
 
 
     /**
@@ -68,7 +72,7 @@ public class EsdevenimentsController {
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); //token invàlid o inactiu
                 }
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e);
             }
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); //token no proporcionat
@@ -525,6 +529,47 @@ public class EsdevenimentsController {
         }
         // Cap token proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat.");
+    }
+
+    /**
+     * Endpoint per calcular la previsió meteorològica i mesures de seguretat.
+     *
+     * @param idEsdeveniment l'identificador únic de l'esdeveniment del qual es volen conèixer les mesures assignades.
+     * @param authorizationHeader l'encapçalament HTTP "Authorization" que conté el token JWT.
+     * @return un {@link ResponseEntity} amb un missatge d'èxit o un estat HTTP adequat en cas d'error.
+     * @author rhospital
+     */
+    @GetMapping("/{id}/meteo")
+    public ResponseEntity<String> calcularMeteo(@PathVariable("id") Integer idEsdeveniment,
+                                                                @RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String encryptedToken = authorizationHeader.substring(7);
+
+            try {
+                // Desxifrem el token amb CipherUtil
+                String token = CipherUtil.decrypt(encryptedToken);
+                String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+                // validar el token sigui correcte i actiu
+                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                    // mètode per obtenir el càlcul de la meteo i mesures a prendre
+                    String meteo = aemetService.calcularMeteo(idEsdeveniment);
+
+                    // Xifrem el JSON amb AES per enviar-lo al client
+                    String encryptedData = CipherUtil.encrypt(meteo);
+
+                    return ResponseEntity.ok(meteo);
+                } else {
+                    // Token invàlid o inactiu
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu");
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e);
+            }
+
+        }
+        // Cap token proporcionat
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat");
     }
 
 

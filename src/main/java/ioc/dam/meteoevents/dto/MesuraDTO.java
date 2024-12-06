@@ -41,4 +41,9 @@ public class MesuraDTO {
      * Acció recomanada segons la condició i el valor.
      */
     private String accio;
+
+    /**
+     * Nivell mesura segons la condició i el valor.
+     */
+    private Integer nivellMesura;
 }

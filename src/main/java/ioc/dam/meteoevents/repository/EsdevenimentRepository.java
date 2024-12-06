@@ -4,6 +4,7 @@ import ioc.dam.meteoevents.entity.Esdeveniment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -33,11 +34,4 @@ public interface EsdevenimentRepository extends JpaRepository<Esdeveniment, Inte
      */
     List<Esdeveniment> findByOrganitzador(String organitzador);
 
-    /**
-     * Troba tots els esdeveniments amb un horari específic.
-     *
-     * @param horari horari de l'esdeveniment.
-     * @return llista d'Esdeveniment amb l'horari especificat.
-     */
-    List<Esdeveniment> findByHorari(String horari);
 }
