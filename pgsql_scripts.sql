@@ -70,12 +70,13 @@ CREATE TABLE esdeveniments (
 	aforament CHARACTER VARYING,
 	hora_inici time without time zone,
     hora_fi time without time zone,
+	data_esde date
 );
 
 ALTER TABLE IF EXISTS esdeveniments ADD CONSTRAINT esdeveniments_pk PRIMARY KEY (id);
 
-INSERT INTO esdeveniments (nom, descripcio, organitzador, direccio, codi_postal, poblacio, horari_inici, horari_fi) VALUES ('IV The Traka', 'Cursa de ciclisme gravel a la provincia de Girona', 'Klassmark', 'Carrer Can Pau Birol, 35', '17005', 'Girona', '8:00', '14:00h');
-INSERT INTO esdeveniments (nom, descripcio, organitzador, direccio, codi_postal, poblacio, horari_inici, horari_fi) VALUES ('Festival Cruïlla', 'Festival de música organitzat per Cruïlla Barcelona celebrat anualment el mes de juliol al Parc del Fòrum de Barcelona', 'Cruïlla Barcelona', 'Carrer de la Pau, 12 (Parc del Fòrum)', '08930', 'Sant Adrià de Besòs', '8:00', '14:00h');
+INSERT INTO esdeveniments (nom, descripcio, organitzador, direccio, codi_postal, poblacio, horari_inici, horari_fi) VALUES ('IV The Traka', 'Cursa de ciclisme gravel a la provincia de Girona', 'Klassmark', 'Carrer Can Pau Birol, 35', '17005', 'Girona', '8:00', '14:00h','07/12/2024');
+INSERT INTO esdeveniments (nom, descripcio, organitzador, direccio, codi_postal, poblacio, horari_inici, horari_fi) VALUES ('Festival Cruïlla', 'Festival de música organitzat per Cruïlla Barcelona celebrat anualment el mes de juliol al Parc del Fòrum de Barcelona', 'Cruïlla Barcelona', 'Carrer de la Pau, 12 (Parc del Fòrum)', '08930', 'Sant Adrià de Besòs', '8:00', '14:00h','07/12/2024');
 
 
 -- Esdeveniments usuaris
