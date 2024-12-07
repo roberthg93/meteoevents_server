@@ -558,7 +558,7 @@ public class EsdevenimentsController {
                     // Xifrem el JSON amb AES per enviar-lo al client
                     String encryptedData = CipherUtil.encrypt(meteo);
 
-                    return ResponseEntity.ok(meteo);
+                    return ResponseEntity.ok(encryptedData);
                 } else {
                     // Token invàlid o inactiu
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu");

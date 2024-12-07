@@ -1,5 +1,11 @@
 package ioc.dam.meteoevents.aemet;
 
+/**
+ * Classe on es defineixen els diferents valors dels nivells d'alerta en funció dels valors obtinguts per
+ * l'API de l'AEMET
+ *
+ * @author mrodriguez
+ */
 public class AlertLevel{
     private static final int WIND_SPEED_AVERAGE_1 = 10;
     private static final int WIND_SPEED_AVERAGE_2 = 14;

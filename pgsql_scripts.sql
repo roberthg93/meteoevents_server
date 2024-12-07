@@ -122,11 +122,11 @@ CREATE TABLE mesures (
 
 ALTER TABLE IF EXISTS mesures ADD CONSTRAINT mesures_pk PRIMARY KEY (id);
 
-INSERT INTO mesures (condicio, valor, valor_um, accio) VALUES ('vent', 30, 'km/h', 'desmontar pancartes, fixar escenari');
-INSERT INTO mesures (condicio, valor, valor_um, accio) VALUES ('vent', 40, 'km/h', 'cancelar esdeveniment');
-INSERT INTO mesures (condicio, valor, valor_um, accio) VALUES ('precipitacio', 10, 'mm/h', 'informació i comunicació als usuaris, revisió desguassos i embornals');
-INSERT INTO mesures (condicio, valor, valor_um, accio) VALUES ('precipitacio', 30, 'mm/h', 'avaluació de zones vulnerables, seguiment de rius i rieres, desviar trànsit si s''escau');
-INSERT INTO mesures (condicio, valor, valor_um, accio) VALUES ('precipitacio', 60, 'mm/h', 'activació protocols de protecció civil, evacuació de zones inundables, assegurar estructures a l''aire lliure');
+INSERT INTO mesures (condicio, valor, valor_um, accio, nivell_mesura) VALUES ('Vent', 30, 'km/h', 'desmontar pancartes, fixar escenari', 4);
+INSERT INTO mesures (condicio, valor, valor_um, accio, nivell_mesura) VALUES ('Vent', 40, 'km/h', 'cancelar esdeveniment', 5);
+INSERT INTO mesures (condicio, valor, valor_um, accio, nivell_mesura) VALUES ('Precipitacio', 10, 'mm/h', 'informació i comunicació als usuaris, revisió desguassos i embornals', 1);
+INSERT INTO mesures (condicio, valor, valor_um, accio, nivell_mesura) VALUES ('Precipitacio', 30, 'mm/h', 'avaluació de zones vulnerables, seguiment de rius i rieres, desviar trànsit si s''escau', 2);
+INSERT INTO mesures (condicio, valor, valor_um, accio, nivell_mesura) VALUES ('Precipitacio', 60, 'mm/h', 'activació protocols de protecció civil, evacuació de zones inundables, assegurar estructures a l''aire lliure', 3);
 
 
 -- Mesures prevenció esdeveniments
