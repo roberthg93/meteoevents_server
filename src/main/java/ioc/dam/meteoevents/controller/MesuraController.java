@@ -41,7 +41,7 @@ public class MesuraController {
      * @return una llista d'objectes {@link Mesura} amb totes les mesures emmagatzemats.
      * @author rhospital
      */
-    @GetMapping
+    /*@GetMapping
     public ResponseEntity<String> llistarMesures(@RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String encryptedToken = authorizationHeader.substring(7);
@@ -71,6 +71,26 @@ public class MesuraController {
             }
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); //token no proporcionat
+    }*/
+    @GetMapping
+    public ResponseEntity<List<Mesura>> llistarMesures(@RequestHeader("Authorization") String authorizationHeader) {
+        String encryptedToken = authorizationHeader.substring(7);
+
+        try {
+            // Desxifrem el token amb CipherUtil
+            String token = CipherUtil.decrypt(encryptedToken);
+            String nomUsuari = jwtUtil.extreureNomUsuari(token);
+
+            // validar el token sigui correcte i actiu
+            if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
+                List<Mesura> mesuras = mesuraService.llistarMesures();
+                return ResponseEntity.ok(mesuras);
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); //token invàlid o inactiu
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+        //return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); //token no proporcionat
     }
 
     /**

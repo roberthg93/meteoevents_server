@@ -53,6 +53,7 @@ public class AemetService {
         Optional<Esdeveniment> esdevenimentOptional = esdevenimentsService.obtenirEsdevenimentPerId(idEsdeveniment);
 
         if (esdevenimentOptional.isPresent()) {
+            System.out.println("Test passo aquí");
             // Recollim els valors necessaris per fer la consulta a l'AEMET
             String esdevenimentPoblacio = esdevenimentOptional.get().getPoblacio();
             String esdevenimentData = esdevenimentOptional.get().getDataEsde();
