@@ -56,9 +56,9 @@ public class AemetService {
             System.out.println("Test passo aquí");
             // Recollim els valors necessaris per fer la consulta a l'AEMET
             String esdevenimentPoblacio = esdevenimentOptional.get().getPoblacio();
-            String esdevenimentData = esdevenimentOptional.get().getDataEsde();
-            Integer esdevenimentHoraInici = Integer.valueOf(esdevenimentOptional.get().getHoraInici().substring(0,2));
-            Integer esdevenimentHoraFi = Integer.valueOf(esdevenimentOptional.get().getHoraFi().substring(0,2));
+            String esdevenimentData = esdevenimentOptional.get().getData_esde();
+            Integer esdevenimenthora_inici = Integer.valueOf(esdevenimentOptional.get().getHora_inici().substring(0,2));
+            Integer esdevenimenthora_fi = Integer.valueOf(esdevenimentOptional.get().getHora_fi().substring(0,2));
             String periodeBuscat = "0107";
 
             String municipiCodi = municipiRepository.findCodiByMunicipi(esdevenimentPoblacio);
@@ -94,7 +94,7 @@ public class AemetService {
 
                                 resultatJSON.set("Usuaris participants",usuarisArrayJSON);
 
-                                for (int i = esdevenimentHoraInici; i <= esdevenimentHoraFi; i++ ) {
+                                for (int i = esdevenimenthora_inici; i <= esdevenimenthora_fi; i++ ) {
                                     // Tornem a convertir l'hora a String amb format "08"
                                     String horaBuscada = String.format("%02d", i);
                                     // Busquem el valor de periodeBuscat
@@ -335,7 +335,7 @@ public class AemetService {
             // Comprovem si existeixen mesures per aquella condició meteorològica
             if (mesuraEsdev.getMesura().getCondicio().equals(mesura)) {
                 // Comprovem si existeixen mesures per aquell nivell d'alerta
-                if (mesuraEsdev.getMesura().getNivellMesura() == alerta) {
+                if (mesuraEsdev.getMesura().getNivell_mesura() == alerta) {
                     accions.add(mesuraEsdev.getMesura().getAccio());
                 }
             }

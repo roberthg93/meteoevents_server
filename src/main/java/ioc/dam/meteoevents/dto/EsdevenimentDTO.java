@@ -49,7 +49,7 @@ public class EsdevenimentDTO {
     /**
      * Codi postal de l'esdeveniment.
      */
-    private String codiPostal;
+    private String codi_postal;
 
     /**
      * Població on es realitza l'esdeveniment.
@@ -64,15 +64,15 @@ public class EsdevenimentDTO {
     /**
      * Horari inici de l'esdeveniment.
      */
-    private String horaInici;
+    private String hora_inici;
 
     /**
      * Horari fi de l'esdeveniment.
      */
-    private String horaFi;
+    private String hora_fi;
 
     /**
      * Data de l'esdeveniment.
      */
-    private String dataEsde;
+    private String data_esde;
 }

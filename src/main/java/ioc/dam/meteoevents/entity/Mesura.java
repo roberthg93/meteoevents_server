@@ -36,7 +36,7 @@ public class Mesura {
     private String accio;
 
     @Column(name = "nivell_mesura", nullable = true)
-    private Integer nivellMesura;
+    private Integer nivell_mesura;
 
     // Relació amb la taula mesures_esdeveniments
     //@OneToMany(mappedBy = "mesura")

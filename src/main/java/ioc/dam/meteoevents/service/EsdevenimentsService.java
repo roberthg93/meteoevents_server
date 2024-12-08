@@ -79,12 +79,12 @@ public class EsdevenimentsService {
             esdeveniment.setDescripcio(esdevenimentDetalls.getDescripcio());
             esdeveniment.setOrganitzador(esdevenimentDetalls.getOrganitzador());
             esdeveniment.setDireccio(esdevenimentDetalls.getDireccio());
-            esdeveniment.setCodiPostal(esdevenimentDetalls.getCodiPostal());
+            esdeveniment.setCodi_postal(esdevenimentDetalls.getCodi_postal());
             esdeveniment.setPoblacio(esdevenimentDetalls.getPoblacio());
             esdeveniment.setAforament(esdevenimentDetalls.getAforament());
-            esdeveniment.setHoraInici(esdevenimentDetalls.getHoraInici());
-            esdeveniment.setHoraFi(esdevenimentDetalls.getHoraFi());
-            esdeveniment.setDataEsde(esdevenimentDetalls.getDataEsde());
+            esdeveniment.setHora_inici(esdevenimentDetalls.getHora_inici());
+            esdeveniment.setHora_fi(esdevenimentDetalls.getHora_fi());
+            esdeveniment.setData_esde(esdevenimentDetalls.getData_esde());
             return esdevenimentRepository.save(esdeveniment);
         }).orElseGet(() -> {
             esdevenimentDetalls.setId(id);

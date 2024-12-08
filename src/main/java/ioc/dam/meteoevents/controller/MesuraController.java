@@ -41,7 +41,7 @@ public class MesuraController {
      * @return una llista d'objectes {@link Mesura} amb totes les mesures emmagatzemats.
      * @author rhospital
      */
-    /*@GetMapping
+    @GetMapping
     public ResponseEntity<String> llistarMesures(@RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String encryptedToken = authorizationHeader.substring(7);
@@ -71,8 +71,8 @@ public class MesuraController {
             }
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); //token no proporcionat
-    }*/
-    @GetMapping
+    }
+    /*@GetMapping
     public ResponseEntity<List<Mesura>> llistarMesures(@RequestHeader("Authorization") String authorizationHeader) {
         String encryptedToken = authorizationHeader.substring(7);
 
@@ -91,7 +91,7 @@ public class MesuraController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
         //return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); //token no proporcionat
-    }
+    }*/
 
     /**
      * Endpoint per obtenir una mesura específica per identificador.

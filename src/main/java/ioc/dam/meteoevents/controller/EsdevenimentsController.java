@@ -149,6 +149,7 @@ public class EsdevenimentsController {
                 if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
                     // Desencriptem esdeveniment enviat en el cos de la petició
                     String esdevenimentJSON = CipherUtil.decrypt(encryptedEsdeveniment);
+                    System.out.println(esdevenimentJSON);
 
                     ObjectMapper objectMapper = new ObjectMapper();
                     Esdeveniment esdeveniment = objectMapper.readValue(esdevenimentJSON, Esdeveniment.class);
@@ -161,6 +162,7 @@ public class EsdevenimentsController {
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
                 }
             } catch (Exception e) {
+                System.out.println(e);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
         }
@@ -558,7 +560,7 @@ public class EsdevenimentsController {
                     // Xifrem el JSON amb AES per enviar-lo al client
                     String encryptedData = CipherUtil.encrypt(meteo);
 
-                    return ResponseEntity.ok(meteo);
+                    return ResponseEntity.ok(encryptedData);
                 } else {
                     // Token invàlid o inactiu
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu");

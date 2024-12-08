@@ -45,5 +45,5 @@ public class MesuraDTO {
     /**
      * Nivell mesura segons la condició i el valor.
      */
-    private Integer nivellMesura;
+    private Integer nivell_mesura;
 }

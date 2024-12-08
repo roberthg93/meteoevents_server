@@ -62,7 +62,7 @@ public class Esdeveniment {
      * Codi postal de l'esdeveniment.
      */
     @Column(name = "codi_postal")
-    private String codiPostal;
+    private String codi_postal;
 
     /**
      * Població on es realitza l'esdeveniment.
@@ -80,17 +80,17 @@ public class Esdeveniment {
      * Horari inici de l'esdeveniment.
      */
     @Column(name = "hora_inici")
-    private String horaInici;
+    private String hora_inici;
 
     /**
      * Horari fi de l'esdeveniment.
      */
     @Column(name = "hora_fi")
-    private String horaFi;
+    private String hora_fi;
 
     /**
      * Data de l'esdeveniment.
      */
     @Column(name = "data_esde")
-    private String dataEsde;
+    private String data_esde;
 }
