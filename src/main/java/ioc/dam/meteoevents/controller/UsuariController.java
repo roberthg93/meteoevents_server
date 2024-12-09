@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Base64;
 
@@ -79,6 +81,18 @@ public class UsuariController {
     @PostMapping("/login")
     public ResponseEntity<String> loginUsuari(@RequestParam String nomUsuari, @RequestParam String contrasenya) {
         try {
+            System.out.println(Instant.now());
+            String contrasenyaLogin = "admin24" + "|" + String.valueOf(Instant.now());
+            String contrasenyaCiph = CipherUtil.encrypt(contrasenyaLogin);
+            String contrasenyaCipBase = Base64.getEncoder().encodeToString(contrasenyaCiph.getBytes());
+            System.out.println(contrasenyaCipBase);
+            // Descodificar el nom d'Usuari amb Base64
+            byte[] nomUsuariBytes = Base64.getDecoder().decode(nomUsuari);
+            String encryptedNomUsuariCipher = new String(nomUsuariBytes);
+
+            // Descodificar contrasenya encriptada amb Cipher
+            String nomUsuariTextPla = CipherUtil.decrypt(encryptedNomUsuariCipher);
+
             // Descodificar la contrasenya amb Base64
             byte[] contrasenyaBytes = Base64.getDecoder().decode(contrasenya);
             String encryptedContrasenyaCipher = new String(contrasenyaBytes);
@@ -86,10 +100,29 @@ public class UsuariController {
             // Descodificar contrasenya encriptada amb Cipher
             String contrasenyaTextPla = CipherUtil.decrypt(encryptedContrasenyaCipher);
 
-            Usuari usuari = usuariService.autenticar(nomUsuari, contrasenyaTextPla);
+            // Per seguretat, la contrasenya ve concatenada amb un Timestamp del moment que s'ha sol·licitat el login
+            String[] parts = contrasenyaTextPla.split("\\|");
+            if (parts.length != 2) {
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Format invalid. Assegura't d'enviar la contarsenya " +
+                        "concatenada així 'contarsenya|timestamp'");
+            }
+
+            String contrasenya_separada = parts[0];
+            String timestampString = parts[1];
+
+            // Comprobem que el timestamp adjuntat amb la contrasenya no sigui superior a fa 30 minuts
+            Instant timestamp = Instant.parse(timestampString);
+            Duration duration = Duration.between(timestamp, Instant.now());
+
+            if (duration.toMinutes() > 30) {
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Contrasenya invàlida, han transcorregut més de " +
+                        "30 minuts des de la sol·licitud");
+            }
+
+            Usuari usuari = usuariService.autenticar(nomUsuariTextPla, contrasenya_separada);
 
             if (usuari != null) {
-                String token = jwtUtil.generarToken(nomUsuari);
+                String token = jwtUtil.generarToken(nomUsuariTextPla);
                 JwtResponse jwtResponse = new JwtResponse(token, usuari.getFuncional_id(), usuari.getId());
 
                 // Serialitzar l'objecte JwtResponse a JSON
@@ -308,6 +341,7 @@ public class UsuariController {
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
                 }
             } catch (Exception e) {
+                System.out.println("ERROR USER INSERT: " + e);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
         }
