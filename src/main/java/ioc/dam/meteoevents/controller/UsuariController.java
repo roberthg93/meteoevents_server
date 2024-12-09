@@ -317,7 +317,7 @@ public class UsuariController {
      * @author rhospital
      */
     @PostMapping
-    public ResponseEntity<Object> afegirUsuari(@RequestBody String encryptedUsuari, @RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<Usuari> afegirUsuari(@RequestBody String encryptedUsuari, @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String encryptedToken = authorizationHeader.substring(7);
 
@@ -338,18 +338,16 @@ public class UsuariController {
                     return ResponseEntity.status(HttpStatus.CREATED).body(nouUsuari);
                 } else {
                     // Token invàlid o inactiu
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token invàlid o inactiu");
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
                 }
             } catch (Exception e) {
-                // Retornar l'error en el cos de la resposta
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("ERROR USER INSERT: " + e.getMessage());
+                System.out.println("ERROR USER INSERT: " + e);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
         }
         // Cap token proporcionat
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token no proporcionat o incorrecte");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
-
 
     /**
      * Endpoint per modificar les dades d'un usuari existent.
