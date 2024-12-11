@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import ioc.dam.meteoevents.entity.Esdeveniment;
 import ioc.dam.meteoevents.entity.EsdevenimentUsuari;
+import ioc.dam.meteoevents.entity.Mesura;
 import ioc.dam.meteoevents.entity.MesuraEsdeveniment;
 import ioc.dam.meteoevents.repository.EsdevenimentUsuariRepository;
 import ioc.dam.meteoevents.repository.MesuraEsdevenimentRepository;
+import ioc.dam.meteoevents.repository.MesuraRepository;
 import ioc.dam.meteoevents.repository.MunicipiRepository;
 import ioc.dam.meteoevents.service.EsdevenimentsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,10 @@ public class AemetService {
 
     @Autowired
     private EsdevenimentUsuariRepository esdevenimentUsuariRepository;
+
+    @Autowired
+    private MesuraRepository mesuraRepository;
+
 
 
     /**
@@ -329,14 +335,24 @@ public class AemetService {
         List<String> accions = new ArrayList<>();
 
         // Obtenim les mesures assignades a un esdeveniment
-        List<MesuraEsdeveniment> mesuresEsdev = mesuraEsdevenimentRepository.findByIdEsdeveniment(idEsdeveniment);
+        //List<MesuraEsdeveniment> mesuresEsdev = mesuraEsdevenimentRepository.findByIdEsdeveniment(idEsdeveniment);
+        List<Mesura> mesuresEsdev = mesuraRepository.findAll();
 
-        for (MesuraEsdeveniment mesuraEsdev : mesuresEsdev) {
+        /*for (MesuraEsdeveniment mesuraEsdev : mesuresEsdev) {
             // Comprovem si existeixen mesures per aquella condició meteorològica
             if (mesuraEsdev.getMesura().getCondicio().equals(mesura)) {
                 // Comprovem si existeixen mesures per aquell nivell d'alerta
                 if (mesuraEsdev.getMesura().getNivell_mesura() == alerta) {
                     accions.add(mesuraEsdev.getMesura().getAccio());
+                }
+            }
+        }*/
+        for (Mesura mesuraEsdev : mesuresEsdev) {
+            // Comprovem si existeixen mesures per aquella condició meteorològica
+            if (mesuraEsdev.getCondicio().equalsIgnoreCase(mesura)) {
+                // Comprovem si existeixen mesures per aquell nivell d'alerta
+                if (mesuraEsdev.getNivell_mesura() <= alerta) {
+                    accions.add(mesuraEsdev.getAccio());
                 }
             }
         }

@@ -277,35 +277,6 @@ public class UsuariController {
         //token no proporcionat
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
-    /*@GetMapping("/{id}")
-    public ResponseEntity<Usuari> obtenirUsuariPerId(@PathVariable Long id, @RequestHeader("Authorization") String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String encryptedToken = authorizationHeader.substring(7);
-
-            try {
-                // Desxifrem el token
-                String token = CipherUtil.decrypt(encryptedToken);
-
-                String nomUsuari = jwtUtil.extreureNomUsuari(token);
-
-                // validar el token sigui correcte i actiu
-                if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
-                    return usuariService.obtenirUsuariPerId(id)
-                            .map(ResponseEntity::ok)
-                            .orElse(ResponseEntity.notFound().build());
-                    //.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-                }
-                //token invàlid o inactiu
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-            }   catch (IllegalArgumentException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-            }
-        }
-        //token no proporcionat
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-    }*/
 
     /**
      * Endpoint per afegir un nou usuari.
