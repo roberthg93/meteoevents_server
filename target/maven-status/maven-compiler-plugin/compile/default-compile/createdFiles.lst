@@ -42,6 +42,7 @@ ioc\dam\meteoevents\mapper\EsdevenimentUsuariMapper.class
 ioc\dam\meteoevents\MeteoeventsApplication.class
 ioc\dam\meteoevents\aemet\AemetService.class
 ioc\dam\meteoevents\aemet\AemetResponse$Prediccion$Dia$sensTermica.class
+ioc\dam\meteoevents\controller\MunicipiController.class
 ioc\dam\meteoevents\entity\MesuraEsdevenimentId.class
 ioc\dam\meteoevents\entity\EsdevenimentUsuariId.class
 ioc\dam\meteoevents\repository\MesuraRepository.class

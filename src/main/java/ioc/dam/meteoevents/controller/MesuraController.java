@@ -97,6 +97,10 @@ public class MesuraController {
                             .map(ResponseEntity::ok)
                             .orElse(ResponseEntity.notFound().build());
 
+                    if (mesura.getStatusCode() == HttpStatus.NOT_FOUND) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Mesura no trobada");
+                    }
+
                     // convertim la llista d'esdeveniments a JSON
                     ObjectMapper objectMapper = new ObjectMapper();
                     String jsonData = objectMapper.writeValueAsString(mesura);

@@ -4,6 +4,7 @@ C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\aemet\AemetService.j
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\aemet\AlertLevel.java
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\controller\EsdevenimentsController.java
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\controller\MesuraController.java
+C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\controller\MunicipiController.java
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\controller\UsuariController.java
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\dto\EsdevenimentDTO.java
 C:\git\meteoevents_server\src\main\java\ioc\dam\meteoevents\dto\EsdevenimentUsuariDTO.java

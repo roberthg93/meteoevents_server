@@ -39,36 +39,6 @@ public class UsuariController {
     private TokenManager tokenManager;
 
 
-
-    /*@PostMapping("/login")
-    public ResponseEntity<String> loginUsuari(@RequestBody String encryptedRequest) {
-        try {
-            // Desxifra la petició
-            String decryptedRequest = cipherUtil.decrypt(encryptedRequest);
-            String[] parts = decryptedRequest.split(":");
-            String nomUsuari = parts[0];
-            String contrasenya = parts[1];
-
-            Usuari usuari = usuariService.autenticar(nomUsuari, contrasenya);
-
-            if (usuari != null) {
-                String token = jwtUtil.generarToken(nomUsuari);
-
-                // Preparem la resposta en format JSON
-                String responseJson = String.format("{\"token\": \"%s\", \"funcional_id\": \"%s\", \"id\": \"%d\"}",
-                        token, usuari.getFuncional_id(), usuari.getId());
-
-                // Xifrem la resposta
-                String encryptedResponse = cipherUtil.encrypt(responseJson);
-                return ResponseEntity.ok(encryptedResponse);
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Tornarà un error 401 sense cos
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error en processar la sol·licitud.");
-        }
-    }*/
-
     /**
      * Endpoint per a l'inici de sessió d'un usuari.
      * Aquest mètode rep el nom d'usuari i la contrasenya, valida les credencials i retorna un token JWT si l'autenticació és correcta.
@@ -81,7 +51,6 @@ public class UsuariController {
     @PostMapping("/login")
     public ResponseEntity<String> loginUsuari(@RequestParam String nomUsuari, @RequestParam String contrasenya) {
         try {
-            System.out.println(Instant.now());
             String contrasenyaLogin = "admin24" + "|" + String.valueOf(Instant.now());
             String contrasenyaCiph = CipherUtil.encrypt(contrasenyaLogin);
             String contrasenyaCipBase = Base64.getEncoder().encodeToString(contrasenyaCiph.getBytes());
@@ -254,6 +223,9 @@ public class UsuariController {
                             .map(ResponseEntity::ok)
                             .orElse(ResponseEntity.notFound().build());
                     //.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                    if (usuari.getStatusCode() == HttpStatus.NOT_FOUND) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuari no trobat");
+                    }
 
                     // Convertim la llista d'usuaris a JSON
                     ObjectMapper objectMapper = new ObjectMapper();

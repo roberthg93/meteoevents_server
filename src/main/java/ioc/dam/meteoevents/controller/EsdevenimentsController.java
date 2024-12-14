@@ -103,6 +103,10 @@ public class EsdevenimentsController {
                             .map(ResponseEntity::ok)
                             .orElse(ResponseEntity.notFound().build());
 
+                    if (esdeveniment.getStatusCode() == HttpStatus.NOT_FOUND) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Esdeveniment no trobat");
+                    }
+
                     // convertim la llista d'esdeveniments a JSON
                     ObjectMapper objectMapper = new ObjectMapper();
                     String jsonData = objectMapper.writeValueAsString(esdeveniment);
