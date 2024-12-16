@@ -99,7 +99,7 @@ public class AlertLevel{
         }else if (temperature > 5 && temperature > TEMPERATURE_HIGH_4) {
             return 5;
         }else{
-            return -1;
+            return 1;
         }
     }
 

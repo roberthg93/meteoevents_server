@@ -59,7 +59,6 @@ public class AemetService {
         Optional<Esdeveniment> esdevenimentOptional = esdevenimentsService.obtenirEsdevenimentPerId(idEsdeveniment);
 
         if (esdevenimentOptional.isPresent()) {
-            System.out.println("Test passo aquí");
             // Recollim els valors necessaris per fer la consulta a l'AEMET
             String esdevenimentPoblacio = esdevenimentOptional.get().getPoblacio();
             String esdevenimentData = esdevenimentOptional.get().getData_esde();
@@ -127,20 +126,21 @@ public class AemetService {
                             }
                         }
                     } else {
-                        return response;
+                        return "Error: " + response;
                     }
 
                 } catch (Exception e) {
                     return "Error: " + e.getMessage();
                 }
             } else {
-                return "Municipi no trobat";
+                return "Error: Municipi no trobat";
             }
 
         } else {
-            return "Esdeveniment no trobat";
+            return "Error: Esdeveniment no trobat";
         }
-        return "No s'ha pogut generar el JSON";
+        return "Error: No s'ha pogut generar el JSON. Has comprovat que la data de l'esdeveniment no sigui superior a les" +
+                " 48 hores a partir d'ara?";
     }
 
     /**

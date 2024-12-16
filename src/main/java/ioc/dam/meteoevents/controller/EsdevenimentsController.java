@@ -153,7 +153,6 @@ public class EsdevenimentsController {
                 if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
                     // Desencriptem esdeveniment enviat en el cos de la petició
                     String esdevenimentJSON = CipherUtil.decrypt(encryptedEsdeveniment);
-                    System.out.println(esdevenimentJSON);
 
                     ObjectMapper objectMapper = new ObjectMapper();
                     Esdeveniment esdeveniment = objectMapper.readValue(esdevenimentJSON, Esdeveniment.class);
@@ -560,6 +559,11 @@ public class EsdevenimentsController {
                 if (jwtUtil.validarToken(token, nomUsuari) && tokenManager.isTokenActive(token)) {
                     // mètode per obtenir el càlcul de la meteo i mesures a prendre
                     String meteo = aemetService.calcularMeteo(idEsdeveniment);
+
+                    // Comprobem que no hi hagi cap error
+                    if (meteo.startsWith("Error")) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(meteo);
+                    }
 
                     // Xifrem el JSON amb AES per enviar-lo al client
                     String encryptedData = CipherUtil.encrypt(meteo);

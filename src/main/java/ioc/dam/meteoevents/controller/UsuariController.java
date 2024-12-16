@@ -98,10 +98,6 @@ public class UsuariController {
                 ObjectMapper objectMapper = new ObjectMapper();
                 String jsonResponse = objectMapper.writeValueAsString(jwtResponse);
 
-                // Print intern per saber el valor del token encriptat i utilitzar-lo per fer proves
-                System.out.println(CipherUtil.encrypt(token));
-                System.out.println(token);
-
                 // Xifrar la resposta JSON
                 String encryptedResponse = CipherUtil.encrypt(jsonResponse);
 
@@ -284,7 +280,7 @@ public class UsuariController {
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
                 }
             } catch (Exception e) {
-                System.out.println("ERROR USER INSERT: " + e);
+                System.out.println("Error User Insert: " + e);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
         }
